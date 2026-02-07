@@ -1,20 +1,26 @@
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.layout.StackPane;
 import javafx.scene.Parent;
 import javafx.stage.Stage;
 import java.io.File;
-public class Main extends Application{
+
+public class Main extends Application {
     @Override
     public void start(Stage stage) throws Exception {
-        StackPane layout = new StackPane();
-        Scene scene = new Scene(layout, 717, 460);
+        Parent root = FXMLLoader.load(getClass().getResource("startPage.fxml"));
+        Scene scene = new Scene(root, 717, 460);
         stage.setScene(scene);
-        stage.setTitle("EIMS Login");
+        stage.setTitle("EIMS - Educational Institution Management System");
         stage.show();
     }
+
     public static void main(String[] args) {
         launch(args);
     }
 }
+
+
+
+// run command
+// javac --module-path "javafx-sdk-24.0.2\lib" --add-modules javafx.controls,javafx.fxml -d bin src\*.java src\Student\*.java src\Teacher\*.java; Copy-Item -Path "src\startPage.fxml" -Destination "bin\" -Force; java --module-path "javafx-sdk-24.0.2\lib" --add-modules javafx.controls,javafx.fxml -cp bin Main
