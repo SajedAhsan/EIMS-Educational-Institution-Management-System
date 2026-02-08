@@ -1,10 +1,22 @@
+package Student;
+
+import java.io.IOException;
+
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.stage.Stage;
 
 public class studentLoginController {
+
+    @FXML
+    private Button backButton;
 
     @FXML
     private TextField studentEmail;
@@ -14,6 +26,18 @@ public class studentLoginController {
 
     @FXML
     private PasswordField studentPass;
+
+    @FXML
+    void stdBackButton(ActionEvent event) throws IOException {
+        Parent root = FXMLLoader.load(getClass().getResource("/startPage.fxml"));
+
+        Stage stage = (Stage) ((Node) event.getSource())
+                .getScene()
+                .getWindow();
+
+        stage.setScene(new Scene(root));
+        stage.show();
+    }
 
     @FXML
     void studentLogin(ActionEvent event) {
@@ -34,3 +58,5 @@ public class studentLoginController {
     }
 
 }
+
+
