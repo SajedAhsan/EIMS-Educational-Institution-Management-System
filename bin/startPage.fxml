@@ -8,26 +8,25 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-
-<Pane fx:controller="StartPageController" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="460.0" prefWidth="717.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1">
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="460.0" prefWidth="717.0" style="-fx-background-color: #35e6e6;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="StartPageController">
    <children>
-      <Text fill="#1b1a1a" layoutX="209.0" layoutY="127.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Log in as " textAlignment="CENTER" wrappingWidth="287.0">
+      <Text fill="#1b1a1a" layoutX="226.0" layoutY="133.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Log in as " textAlignment="CENTER" wrappingWidth="287.0">
          <font>
             <Font name="Arial Black" size="45.0" />
          </font>
       </Text>
-      <Text layoutX="184.0" layoutY="382.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Teacher" textAlignment="CENTER" wrappingWidth="103.44921875">
+      <Text layoutX="191.0" layoutY="396.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Teacher" textAlignment="CENTER" wrappingWidth="103.44921875">
          <font>
             <Font name="System Bold" size="20.0" />
          </font>
       </Text>
-      <Text layoutX="437.0" layoutY="383.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Student">
+      <Text layoutX="466.0" layoutY="395.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Student">
          <font>
             <Font name="System Bold" size="20.0" />
          </font>
       </Text>
       <ButtonBar layoutX="-18.0" layoutY="26.0" prefHeight="40.0" prefWidth="200.0" />
-      <Button layoutX="138.0" layoutY="172.0" mnemonicParsing="false" onAction="#teacherButton" prefHeight="188.0" prefWidth="187.0">
+      <Button layoutX="138.0" layoutY="172.0" mnemonicParsing="false" onAction="#teacherButton" prefHeight="188.0" prefWidth="187.0" style="-fx-background-color: white;">
          <graphic>
             <ImageView fitHeight="179.0" fitWidth="196.0" pickOnBounds="true" preserveRatio="true">
                <image>
@@ -36,7 +35,7 @@
             </ImageView>
          </graphic>
       </Button>
-      <Button layoutX="377.0" layoutY="173.0" mnemonicParsing="false" onAction="#studentButton" prefHeight="188.0" prefWidth="187.0">
+      <Button layoutX="399.0" layoutY="172.0" mnemonicParsing="false" onAction="#studentButton" prefHeight="188.0" prefWidth="187.0" style="-fx-background-color: white;">
          <graphic>
             <ImageView fitHeight="179.0" fitWidth="196.0" pickOnBounds="true" preserveRatio="true">
                <image>

@@ -6,19 +6,34 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<SplitPane dividerPositions="0.28762541806020064" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Student.studentDashboardController">
+<SplitPane dividerPositions="0.28762541806020064" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="460.0" prefWidth="717.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Student.studentDashboardController">
   <items>
     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
          <children>
-            <Button layoutX="20.0" layoutY="20.0" mnemonicParsing="false" prefHeight="53.0" prefWidth="131.0" text="profile" />
-            <Button layoutX="20.0" layoutY="96.0" mnemonicParsing="false" prefHeight="53.0" prefWidth="131.0" text="grades" />
-            <Button layoutX="20.0" layoutY="173.0" mnemonicParsing="false" prefHeight="53.0" prefWidth="131.0" text="courses" />
-            <Button layoutX="20.0" layoutY="251.0" mnemonicParsing="false" prefHeight="53.0" prefWidth="131.0" text="others" />
-            <Button layoutX="20.0" layoutY="330.0" mnemonicParsing="false" onAction="#logout" prefHeight="40.0" prefWidth="131.0" style="-fx-background-color: #ff6b6b;" text="Logout" textFill="WHITE" />
+            <Button layoutX="36.0" layoutY="49.0" mnemonicParsing="false" prefHeight="53.0" prefWidth="131.0" style="-fx-background-color: #0088ff;" text="profile">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font></Button>
+            <Button layoutX="36.0" layoutY="125.0" mnemonicParsing="false" prefHeight="53.0" prefWidth="131.0" style="-fx-background-color: #0088ff;" text="grades">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font></Button>
+            <Button layoutX="36.0" layoutY="203.0" mnemonicParsing="false" prefHeight="53.0" prefWidth="131.0" style="-fx-background-color: #0088ff;" text="courses">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font></Button>
+            <Button layoutX="36.0" layoutY="279.0" mnemonicParsing="false" prefHeight="53.0" prefWidth="131.0" style="-fx-background-color: #0088ff;" text="others">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font></Button>
+            <Button layoutX="36.0" layoutY="363.0" mnemonicParsing="false" onAction="#logout" prefHeight="40.0" prefWidth="131.0" style="-fx-background-color: #ff6b6b;" text="Logout" textFill="WHITE">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font></Button>
          </children></AnchorPane>
     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="398.0" prefWidth="422.0">
          <children>
-            <Text layoutX="84.0" layoutY="179.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Student dashboard" wrappingWidth="230.13671875">
+            <Text layoutX="138.0" layoutY="204.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Student dashboard" wrappingWidth="230.13671875">
                <font>
                   <Font size="43.0" />
                </font>

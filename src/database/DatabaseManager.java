@@ -91,7 +91,7 @@ public class DatabaseManager {
                     try (PreparedStatement insertStmt = connection.prepareStatement(insertTeacher)) {
                         insertStmt.setString(1, "teacher@eims.com");
                         insertStmt.setString(2, "teacher123");
-                        insertStmt.setString(3, "John Doe");
+                        insertStmt.setString(3, "Teacher 1");
                         insertStmt.setString(4, "Mathematics");
                         insertStmt.executeUpdate();
                         System.out.println("Default teacher account created: teacher@eims.com / teacher123");
@@ -110,7 +110,7 @@ public class DatabaseManager {
                     try (PreparedStatement insertStmt = connection.prepareStatement(insertStudent)) {
                         insertStmt.setString(1, "student@eims.com");
                         insertStmt.setString(2, "student123");
-                        insertStmt.setString(3, "Jane Smith");
+                        insertStmt.setString(3, "Student 1");
                         insertStmt.setString(4, "Grade 10");
                         insertStmt.executeUpdate();
                         System.out.println("Default student account created: student@eims.com / student123");
