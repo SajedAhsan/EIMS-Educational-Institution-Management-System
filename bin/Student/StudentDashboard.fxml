@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<SplitPane dividerPositions="0.28762541806020064" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/25" fx:controller="Student.studentDashboardController">
+  <items>
+    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+         <children>
+            <Button layoutX="20.0" layoutY="47.0" mnemonicParsing="false" prefHeight="53.0" prefWidth="131.0" text="profile" />
+            <Button layoutX="19.0" layoutY="123.0" mnemonicParsing="false" prefHeight="53.0" prefWidth="131.0" text="grades" />
+            <Button layoutX="20.0" layoutY="199.0" mnemonicParsing="false" prefHeight="53.0" prefWidth="131.0" text="courses" />
+            <Button layoutX="20.0" layoutY="285.0" mnemonicParsing="false" prefHeight="53.0" prefWidth="131.0" text="others" />
+            <Button layoutX="20.0" layoutY="350.0" mnemonicParsing="false" onAction="#logout" prefHeight="40.0" prefWidth="131.0" style="-fx-background-color: #ff6b6b;" text="Logout" textFill="WHITE" />
+         </children></AnchorPane>
+    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="398.0" prefWidth="422.0">
+         <children>
+            <Text layoutX="84.0" layoutY="179.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Student dashboard" wrappingWidth="230.13671875">
+               <font>
+                  <Font size="43.0" />
+               </font>
+            </Text>
+         </children></AnchorPane>
+  </items>
+</SplitPane>

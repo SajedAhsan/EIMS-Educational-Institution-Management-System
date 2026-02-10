@@ -2,12 +2,15 @@ package Teacher;
 
 import java.io.IOException;
 
+import database.AuthenticationService;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -26,6 +29,12 @@ public class teacherLoginController {
 
     @FXML
     private PasswordField teacherPass;
+    
+    private AuthenticationService authService;
+    
+    public teacherLoginController() {
+        authService = new AuthenticationService();
+    }
 
     @FXML
     void teacherBackButton(ActionEvent event) throws IOException {
@@ -38,22 +47,45 @@ public class teacherLoginController {
         stage.setScene(new Scene(root));
         stage.show();
     }
+    
     @FXML
     void teacherLogin(ActionEvent event) {
-        // Get the entered credentials
-        String email = teacherEmail.getText();
+        String email = teacherEmail.getText().trim();
         String password = teacherPass.getText();
         
-        // TODO: Add authentication logic here
-        System.out.println("Teacher Login attempt with email: " + email);
-        
-        // For now, just checking if fields are not empty
         if (email.isEmpty() || password.isEmpty()) {
-            System.out.println("Please fill in all fields");
+            showAlert(AlertType.ERROR, "Login Error", "Please fill in all fields");
+            return;
+        }
+        
+        if (authService.authenticateTeacher(email, password)) {
+            String teacherName = authService.getTeacherName(email);
+            showAlert(AlertType.INFORMATION, "Login Successful", 
+                     "Welcome, " + (teacherName != null ? teacherName : "Teacher") + "!");
+            
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/Teacher/TeacherDashboard.fxml"));
+                Parent root = loader.load();
+                
+                Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+                stage.setScene(new Scene(root));
+                stage.show();
+            } catch (IOException e) {
+                e.printStackTrace();
+                showAlert(AlertType.ERROR, "Navigation Error", 
+                         "Failed to load Teacher Dashboard: " + e.getMessage());
+            }
         } else {
-            System.out.println("Login successful! Navigating to Teacher Dashboard...");
-            // TODO: Navigate to Teacher Dashboard
+            showAlert(AlertType.ERROR, "Login Failed", "Invalid email or password");
+            teacherPass.clear();
         }
     }
-
+    
+    private void showAlert(AlertType alertType, String title, String message) {
+        Alert alert = new Alert(alertType);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
 }
