@@ -38,7 +38,7 @@ public class studentLoginController {
 
     @FXML
     void stdBackButton(ActionEvent event) throws IOException {
-        Parent root = FXMLLoader.load(getClass().getResource("/startPage.fxml"));
+        Parent root = FXMLLoader.load(getClass().getResource("../startPage.fxml"));
 
         Stage stage = (Stage) ((Node) event.getSource())
                 .getScene()
@@ -64,7 +64,7 @@ public class studentLoginController {
                      "Welcome, " + (studentName != null ? studentName : "Student") + "!");
             
             try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/Student/StudentDashboard.fxml"));
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("StudentDashboard.fxml"));
                 Parent root = loader.load();
                 
                 Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();

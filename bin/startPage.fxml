@@ -30,7 +30,7 @@
          <graphic>
             <ImageView fitHeight="179.0" fitWidth="196.0" pickOnBounds="true" preserveRatio="true">
                <image>
-                  <Image url="file:///D:/EIMS/EIMS-Educational-Institution-Management-System/resources/images/Teacher.jpg" />
+                  <Image url="@../resources/images/Teacher.jpg" />
                </image>
             </ImageView>
          </graphic>
@@ -39,7 +39,7 @@
          <graphic>
             <ImageView fitHeight="179.0" fitWidth="196.0" pickOnBounds="true" preserveRatio="true">
                <image>
-                  <Image url="file:///D:/EIMS/EIMS-Educational-Institution-Management-System/resources/images/Student.jpg" />
+                  <Image url="@../resources/images/Student.jpg" />
                </image>
             </ImageView>
          </graphic>

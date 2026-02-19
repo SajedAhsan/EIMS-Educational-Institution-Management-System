@@ -25,7 +25,7 @@ public class teacherDashboardController {
             alert.showAndWait();
             
             // Navigate back to start page
-            Parent root = FXMLLoader.load(getClass().getResource("/startPage.fxml"));
+            Parent root = FXMLLoader.load(getClass().getResource("../startPage.fxml"));
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.show();

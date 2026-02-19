@@ -6,7 +6,12 @@
       "name": "Launch JavaFX",
       "request": "launch",
       "mainClass": "Main",
-      "vmArgs": "--module-path d:EIMS/EIMS-Educational-Institution-Management-System/javafx-sdk-24.0.2/lib --add-modules javafx.controls,javafx.fxml"
+      "vmArgs": "--module-path ${workspaceFolder}/javafx-sdk-24.0.2/lib --add-modules javafx.controls,javafx.fxml",
+      "classPaths": [
+        "${workspaceFolder}/bin",
+        "${workspaceFolder}/lib/h2-2.2.224.jar",
+        "${workspaceFolder}/resources"
+      ]
     }
   ]
 }

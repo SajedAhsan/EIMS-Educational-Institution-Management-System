@@ -1,121 +1,154 @@
 # EIMS - Educational Institution Management System
 
-## Project Structure
+A JavaFX-based management system for educational institutions with H2 database integration.
+
+## 📋 Requirements
+
+- **Java Development Kit (JDK)** 11 or higher
+- **JavaFX SDK** 24.0.2 (included in project)
+- **H2 Database** (included in lib folder)
+- **Windows** operating system
+
+## 🚀 Quick Start
+
+```powershell
+# Compile
+.\compile.ps1
+
+# Run
+.\run.ps1
+```
+
+## 📁 Project Structure
 
 ```
 EIMS/
-├── src/
-│   ├── Main.java                    # Application entry point
-│   ├── StartPageController.java     # Start page controller
-│   ├── startPage.fxml              # Start page UI layout
-│   ├── Student/                    # Student-related code
-│   │   ├── StudentLogin.java
-│   │   └── StudentDashboard.java
-│   └── Teacher/                    # Teacher-related code
-│       ├── TeacherLogin.java
-│       └── TeacherDashboard.java
-├── bin/                            # Compiled .class files (auto-generated)
-├── resources/
-│   └── images/                     # Image resources
+├── src/                            # Source files
+│   ├── Main.java                   # Application entry point
+│   ├── StartPageController.java    # Start page controller
+│   ├── startPage.fxml              # Start page UI
+│   ├── database/                   # Database package
+│   │   ├── DatabaseManager.java
+│   │   └── AuthenticationService.java
+│   ├── Student/                    # Student module
+│   │   ├── studentLoginController.java
+│   │   ├── studentLoginPage.fxml
+│   │   ├── studentDashboardController.java
+│   │   └── StudentDashboard.fxml
+│   └── Teacher/                    # Teacher module
+│       ├── teacherLoginController.java
+│       ├── teacherLoginPage.fxml
+│       ├── teacherDashboardController.java
+│       └── TeacherDashboard.fxml
+├── resources/                      # Resources folder
+│   └── images/                     # Image assets
 │       ├── Teacher.jpg
 │       └── Student.jpg
-└── javafx-sdk-24.0.2/             # JavaFX SDK
+├── lib/                            # External libraries
+│   └── h2-2.2.224.jar             # H2 Database
+├── javafx-sdk-24.0.2/             # JavaFX SDK
+├── bin/                            # Compiled classes (auto-generated)
+├── compile.ps1                     # Compile script
+└── run.ps1                         # Run script
 ```
 
-## Requirements
+## 🔐 Default Login Credentials
 
-- Java Development Kit (JDK) 11 or higher
-- JavaFX SDK 24.0.2 (included in project)
+### Teacher Account
+- **Email:** teacher@eims.com
+- **Password:** teacher123
 
-## Compile and Run Commands
+### Student Account
+- **Email:** student@eims.com
+- **Password:** student123
 
-### 1. Compile the Project
+## 💾 Database
 
-```powershell
-javac --module-path "javafx-sdk-24.0.2\lib" --add-modules javafx.controls,javafx.fxml -d bin src\*.java src\Student\*.java src\Teacher\*.java
-```
+- **Type:** H2 (Embedded)
+- **File:** `eims_db.mv.db` (auto-created on first run)
+- **Connection:** `jdbc:h2:./eims_db`
+- Tables: `teachers`, `students`
 
-This command:
-- Compiles all Java files from `src/`, `src/Student/`, and `src/Teacher/`
-- Places compiled `.class` files in the `bin/` directory
-- Includes JavaFX modules for controls and FXML
+## 🛠️ Manual Compilation & Execution
 
-### 2. Copy FXML Files to bin
+### Windows
 
-```powershell
+javac --module-path "javafx-sdk-24.0.2\lib" --add-modules javafx.controls,javafx.fxml -cp "lib\h2-2.2.224.jar;resources" -d bin src\*.java src\Student\*.java src\Teacher\*.java src\database\*.java
+
+# Copy FXML files
 Copy-Item -Path "src\startPage.fxml" -Destination "bin\" -Force
-```
+New-Item -ItemType Directory -Path "bin\Teacher" -Force
+New-Item -ItemType Directory -Path "bin\Student" -Force
+Copy-Item -Path "src\Teacher\*.fxml" -Destination "bin\Teacher\" -Force
+Copy-Item -Path "src\Student\*.fxml" -Destination "bin\Student\" -Force
 
-### 3. Run the Application
-
-```powershell
-java --module-path "javafx-sdk-24.0.2\lib" --add-modules javafx.controls,javafx.fxml -cp bin Main
-```
-
-## Quick Commands (All-in-One)
-
-### Compile and Run Together:
-
-```powershell
-javac --module-path "javafx-sdk-24.0.2\lib" --add-modules javafx.controls,javafx.fxml -d bin src\*.java src\Student\*.java src\Teacher\*.java; Copy-Item -Path "src\startPage.fxml" -Destination "bin\" -Force; java --module-path "javafx-sdk-24.0.2\lib" --add-modules javafx.controls,javafx.fxml -cp bin Main
-```
-
-### For Linux/Mac:
-
-**Compile:**
-```bash
-javac --module-path "javafx-sdk-24.0.2/lib" --add-modules javafx.controls,javafx.fxml -d bin src/*.java src/Student/*.java src/Teacher/*.java
-```
-
-**Copy FXML:**
-```bash
-cp src/startPage.fxml bin/
+# Copy resources
+Copy-Item -Path "resources" -Destination "bin\" -Recurse -Force
 ```
 
 **Run:**
-```bash
-java --module-path "javafx-sdk-24.0.2/lib" --add-modules javafx.controls,javafx.fxml -cp bin Main
+```powershell
+java --module-path "javafx-sdk-24.0.2\lib" --add-modules javafx.controls,javafx.fxml -cp "bin;lib\h2-2.2.224.jar;resources" Main
 ```
 
-## Features
+### Linux / macOS
 
-- **Start Page**: Choose between Teacher and Student login
-- **Teacher Module**: Login and dashboard (placeholder)
-- **Student Module**: Login and dashboard (placeholder)
-- **Organized Structure**: Student and Teacher code in separate folders
-- **Clean Build**: All .class files in separate bin/ directory
+**C project includes `.vscode/launch.json` for easy debugging. Simply:
+1. Open the project in VS Code
+2. Install Java Extension Pack
+3. Press F5 to run/debug
 
-## Adding New Features
+## ✨ Features
 
-### For Student Features:
-Add new Java files in `src/Student/` folder
+- ✅ Cross-platform compatibility (Windows, Linux, macOS)
+- ✅ Teacher and Student login modules
+- ✅ Database authentication with H2
+- ✅ Automatic table creation and default data insertion
+- ✅ Relative paths - works from any directory
+- ✅ Clean MVC architecture
 
-### For Teacher Features:
-Add new Java files in `src/Teacher/` folder
+## 🐛 Troubleshooting
 
-### For New UI Screens:
-1. Create FXML file in `src/`
-2. Create corresponding controller Java file
-3. Remember to copy FXML to `bin/` after changes
+### Compilation Errors
+- Ensure JDK 11+ is installed: `java -version`
+- Verify JavaFX SDK is in `javafx-sdk-24.0.2` folder
+- Check that H2 jar is in `lib` folder
 
-## Troubleshooting
+### Database Issues
+- Delete `eims_db.mv.db` and restart
+- Check console for error messages
 
-**Issue**: `ClassNotFoundException` or class not found
-**Solution**: Make sure you compiled with `-d bin` and running with `-cp bin`
+### Permission Denied (Linux/Mac)
+```bash
+chmod +x compile.sh run.sh
+```
 
-**Issue**: FXML LoadException
-**Solution**: Make sure you copied the FXML file to bin/ directory
+### Teacher and Student login modules
+- ✅ Database authentication with H2
+- ✅ Automatic table creation and default data insertion
+- ✅ Relative paths - works from any directory on Windows
+- ✅ Clean MVC architecture
+- ✅ Easy-to-use PowerShell scripts
 
-**Issue**: Image not loading
-**Solution**: Verify images exist in `resources/images/` directory
+### New Teacher Features
+Add Java files to `src/Teacher/` folder
 
-## Notes
+### New Student Features
+Add Java files to `src/Student/` folder
 
-- The `bin/` directory contains all compiled `.class` files
-- Student-related code is in `src/Student/`
-- Teacher-related code is in `src/Teacher/`
-- Main application files are in `src/` root
-- Resources (images) are in `resources/` directory
+### New UI Screens
+1. Create FXML file in appropriate folder
+2. Create controller class
+3. Update compile scripts to copy new FXML files
 
+## Scripts Won't Run
+- Add attendance system
+- Enhance dashboard features
 
-javac --module-path "javafx-sdk-24.0.2\lib" --add-modules javafx.controls,javafx.fxml -d bin src\*.java src\Student\*.java src\Teacher\*.java; Copy-Item -Path "src\startPage.fxml" -Destination "bin\" -Force; java --module-path "javafx-sdk-24.0.2\lib" --add-modules javafx.controls,javafx.fxml -cp bin Main
+## 📄 License
+
+Educational project - free to use and modify
+
+---
+
+**Made with ❤️ for Educational Institutions**

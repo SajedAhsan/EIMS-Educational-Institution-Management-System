@@ -1,0 +1,36 @@
+# Compiled class files
+*.class
+bin/
+
+# Database files
+*.mv.db
+*.trace.db
+
+# IDE specific files
+.vscode/
+.idea/
+*.iml
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
+
+# Temporary files
+*.tmp
+*.swp
+*~
+
+# Package Files
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Exclude H2 jar from ignore (we need it)
+!lib/h2-*.jar
