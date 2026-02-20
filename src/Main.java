@@ -8,7 +8,7 @@ public class Main extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         Parent root = FXMLLoader.load(getClass().getResource("startPage.fxml"));
-        Scene scene = new Scene(root, 717, 460);
+        Scene scene = new Scene(root);
         stage.setScene(scene);
         stage.setTitle("EIMS - Educational Institution Management System");
         stage.show();
