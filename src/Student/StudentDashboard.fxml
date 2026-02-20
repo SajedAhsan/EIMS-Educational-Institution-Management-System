@@ -6,36 +6,36 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<SplitPane dividerPositions="0.28762541806020064" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="460.0" prefWidth="717.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Student.studentDashboardController">
+<SplitPane dividerPositions="0.28762541806020064" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Student.studentDashboardController">
   <items>
-    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="244.0" prefWidth="125.0">
          <children>
-            <Button layoutX="36.0" layoutY="49.0" mnemonicParsing="false" prefHeight="53.0" prefWidth="131.0" style="-fx-background-color: #0088ff;" text="profile">
+            <Button fx:id="profileButton" layoutX="45.0" layoutY="75.0" mnemonicParsing="false" prefHeight="81.0" prefWidth="164.0" style="-fx-background-color: #0088ff;" text="profile">
                <font>
-                  <Font name="System Bold" size="12.0" />
+                  <Font name="System Bold" size="15.0" />
                </font></Button>
-            <Button layoutX="36.0" layoutY="125.0" mnemonicParsing="false" prefHeight="53.0" prefWidth="131.0" style="-fx-background-color: #0088ff;" text="grades">
+            <Button fx:id="myGroupsButton" layoutX="45.0" layoutY="190.0" mnemonicParsing="false" onAction="#handleMyGroups" prefHeight="81.0" prefWidth="164.0" style="-fx-background-color: #0088ff;" text="my groups">
                <font>
-                  <Font name="System Bold" size="12.0" />
+                  <Font name="System Bold" size="15.0" />
                </font></Button>
-            <Button layoutX="36.0" layoutY="203.0" mnemonicParsing="false" prefHeight="53.0" prefWidth="131.0" style="-fx-background-color: #0088ff;" text="courses">
+            <Button fx:id="coursesButton" layoutX="45.0" layoutY="309.0" mnemonicParsing="false" prefHeight="81.0" prefWidth="164.0" style="-fx-background-color: #0088ff;" text="courses">
                <font>
-                  <Font name="System Bold" size="12.0" />
+                  <Font name="System Bold" size="15.0" />
                </font></Button>
-            <Button layoutX="36.0" layoutY="279.0" mnemonicParsing="false" prefHeight="53.0" prefWidth="131.0" style="-fx-background-color: #0088ff;" text="others">
+            <Button layoutX="45.0" layoutY="425.0" mnemonicParsing="false" prefHeight="81.0" prefWidth="164.0" style="-fx-background-color: #0088ff;" text="others">
                <font>
-                  <Font name="System Bold" size="12.0" />
+                  <Font name="System Bold" size="15.0" />
                </font></Button>
-            <Button layoutX="36.0" layoutY="363.0" mnemonicParsing="false" onAction="#logout" prefHeight="40.0" prefWidth="131.0" style="-fx-background-color: #ff6b6b;" text="Logout" textFill="WHITE">
+            <Button layoutX="45.0" layoutY="552.0" mnemonicParsing="false" onAction="#logout" prefHeight="61.0" prefWidth="164.0" style="-fx-background-color: #ff6b6b;" text="Logout" textFill="WHITE">
                <font>
-                  <Font name="System Bold" size="12.0" />
+                  <Font name="System Bold" size="15.0" />
                </font></Button>
          </children></AnchorPane>
-    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="398.0" prefWidth="422.0">
+    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="606.0" prefWidth="530.0">
          <children>
-            <Text layoutX="138.0" layoutY="204.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Student dashboard" wrappingWidth="230.13671875">
+            <Text layoutX="173.0" layoutY="310.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Student dashboard" wrappingWidth="289.0">
                <font>
-                  <Font size="43.0" />
+                  <Font size="54.0" />
                </font>
             </Text>
          </children></AnchorPane>

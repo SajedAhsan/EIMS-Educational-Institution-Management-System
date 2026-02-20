@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Teacher.GroupDetailsController">
+   <children>
+      <Label fx:id="groupNameLabel" layoutX="50.0" layoutY="30.0" text="Group Name">
+         <font>
+            <Font name="System Bold" size="32.0" />
+         </font>
+      </Label>
+      
+      <!-- Group Members Section -->
+      <Label layoutX="50.0" layoutY="100.0" text="Group Members">
+         <font>
+            <Font name="System Bold" size="18.0" />
+         </font>
+      </Label>
+      <ListView fx:id="membersList" layoutX="50.0" layoutY="135.0" prefHeight="200.0" prefWidth="800.0" />
+      
+      <Separator layoutX="50.0" layoutY="355.0" prefWidth="800.0" />
+      
+      <!-- Educational Assets Section -->
+      <Label layoutX="50.0" layoutY="375.0" text="Educational Assets">
+         <font>
+            <Font name="System Bold" size="18.0" />
+         </font>
+      </Label>
+      
+      <Label layoutX="50.0" layoutY="415.0" text="Asset Title:">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </Label>
+      <TextField fx:id="assetTitleField" layoutX="150.0" layoutY="410.0" prefHeight="30.0" prefWidth="350.0" promptText="Enter asset title" />
+      
+      <Label layoutX="50.0" layoutY="455.0" text="Description:">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </Label>
+      <TextArea fx:id="assetDescriptionArea" layoutX="150.0" layoutY="455.0" prefHeight="80.0" prefWidth="350.0" promptText="Enter asset description" wrapText="true" />
+      
+      <Label layoutX="50.0" layoutY="550.0" text="File Path:">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </Label>
+      <TextField fx:id="assetFilePathField" layoutX="150.0" layoutY="545.0" prefHeight="30.0" prefWidth="280.0" promptText="Enter file path or URL" />
+      <Button fx:id="browseButton" layoutX="440.0" layoutY="545.0" onAction="#handleBrowseFile" prefHeight="30.0" prefWidth="60.0" style="-fx-background-color: #6c757d;" text="Browse" textFill="WHITE">
+         <font>
+            <Font name="System Bold" size="11.0" />
+         </font>
+      </Button>
+      
+      <Label layoutX="50.0" layoutY="595.0" text="Type:">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </Label>
+      <TextField fx:id="assetTypeField" layoutX="150.0" layoutY="590.0" prefHeight="30.0" prefWidth="200.0" promptText="e.g., PDF, Video, Link" />
+      
+      <Button fx:id="addAssetButton" layoutX="370.0" layoutY="590.0" onAction="#handleAddAsset" prefHeight="35.0" prefWidth="130.0" style="-fx-background-color: #28a745;" text="Share Asset" textFill="WHITE">
+         <font>
+            <Font name="System Bold" size="13.0" />
+         </font>
+      </Button>
+      
+      <Separator layoutX="530.0" layoutY="410.0" orientation="VERTICAL" prefHeight="220.0" />
+      
+      <!-- Shared Assets List -->
+      <Label layoutX="550.0" layoutY="415.0" text="Shared Assets:">
+         <font>
+            <Font name="System Bold" size="14.0" />
+         </font>
+      </Label>
+      <ListView fx:id="sharedAssetsList" layoutX="550.0" layoutY="445.0" prefHeight="180.0" prefWidth="300.0" />
+      
+      <Button fx:id="refreshAssetsButton" layoutX="550.0" layoutY="635.0" onAction="#handleRefreshAssets" prefHeight="30.0" prefWidth="100.0" style="-fx-background-color: #0088ff;" text="Refresh" textFill="WHITE">
+         <font>
+            <Font name="System Bold" size="11.0" />
+         </font>
+      </Button>
+      
+      <Label fx:id="statusLabel" layoutX="50.0" layoutY="650.0" textFill="#0088ff">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </Label>
+      
+      <Button fx:id="backButton" layoutX="750.0" layoutY="640.0" onAction="#handleBack" prefHeight="40.0" prefWidth="100.0" style="-fx-background-color: #6c757d;" text="Back" textFill="WHITE">
+         <font>
+            <Font name="System Bold" size="13.0" />
+         </font>
+      </Button>
+   </children>
+</AnchorPane>

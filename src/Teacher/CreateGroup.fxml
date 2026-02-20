@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.control.SelectionMode?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Teacher.CreateGroupController">
+   <children>
+      <Label layoutX="315.0" layoutY="35.0" text="Create New Group">
+         <font>
+            <Font name="System Bold" size="33.0" />
+         </font>
+      </Label>
+      
+      <Label layoutX="56.0" layoutY="117.0" text="Group Name:">
+         <font>
+            <Font size="19.0" />
+         </font>
+      </Label>
+      <TextField fx:id="groupNameField" layoutX="203.0" layoutY="111.0" prefHeight="35.0" prefWidth="450.0" promptText="Enter group name" />
+      
+      <Label layoutX="56.0" layoutY="187.0" text="Search Students:">
+         <font>
+            <Font size="19.0" />
+         </font>
+      </Label>
+      <TextField fx:id="searchField" layoutX="203.0" layoutY="181.0" prefHeight="35.0" prefWidth="338.0" promptText="Search by name or email" />
+      <Button fx:id="searchButton" layoutX="563.0" layoutY="181.0" onAction="#handleSearchStudents" prefHeight="35.0" prefWidth="90.0" style="-fx-background-color: #0088ff;" text="Search" textFill="WHITE">
+         <font>
+            <Font name="System Bold" size="14.0" />
+         </font>
+      </Button>
+      
+      <Label layoutX="56.0" layoutY="245.0" text="Available Students:">
+         <font>
+            <Font name="System Bold" size="16.0" />
+         </font>
+      </Label>
+      <ListView fx:id="availableStudentsList" layoutX="56.0" layoutY="274.0" prefHeight="292.0" prefWidth="360.0" />
+      
+      <Button fx:id="addButton" layoutX="428.0" layoutY="356.0" onAction="#handleAddStudent" prefHeight="47.0" prefWidth="45.0" style="-fx-background-color: #28a745;" text="&gt;&gt;" textFill="WHITE">
+         <font>
+            <Font name="System Bold" size="16.0" />
+         </font>
+      </Button>
+      <Button fx:id="removeButton" layoutX="428.0" layoutY="414.0" onAction="#handleRemoveStudent" prefHeight="47.0" prefWidth="45.0" style="-fx-background-color: #dc3545;" text="&lt;&lt;" textFill="WHITE">
+         <font>
+            <Font name="System Bold" size="16.0" />
+         </font>
+      </Button>
+      
+      <Label layoutX="484.0" layoutY="245.0" text="Selected Students:">
+         <font>
+            <Font name="System Bold" size="16.0" />
+         </font>
+      </Label>
+      <ListView fx:id="selectedStudentsList" layoutX="484.0" layoutY="274.0" prefHeight="292.0" prefWidth="360.0" />
+      
+      <Button fx:id="createGroupBtn" layoutX="619.0" layoutY="607.0" onAction="#handleCreateGroup" prefHeight="58.0" prefWidth="225.0" style="-fx-background-color: #0088ff;" text="Create Group" textFill="WHITE">
+         <font>
+            <Font name="System Bold" size="19.0" />
+         </font>
+      </Button>
+      
+      <Button fx:id="backButton" layoutX="56.0" layoutY="607.0" onAction="#handleBack" prefHeight="58.0" prefWidth="135.0" style="-fx-background-color: #6c757d;" text="Back" textFill="WHITE">
+         <font>
+            <Font name="System Bold" size="16.0" />
+         </font>
+      </Button>
+      
+      <Label fx:id="statusLabel" layoutX="225.0" layoutY="630.0" textFill="#0088ff">
+         <font>
+            <Font size="16.0" />
+         </font>
+      </Label>
+   </children>
+</AnchorPane>

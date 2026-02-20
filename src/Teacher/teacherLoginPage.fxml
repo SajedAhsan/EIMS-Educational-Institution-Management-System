@@ -7,16 +7,16 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="460.0" prefWidth="717.0" style="-fx-background-color: #35e6e6;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Teacher.teacherLoginController">
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="900.0" style="-fx-background-color: #35e6e6;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Teacher.teacherLoginController">
    <children>
-      <Text layoutX="240.0" layoutY="156.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Teacher Log in" wrappingWidth="236.44921875">
+      <Text layoutX="301.0" layoutY="237.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Teacher Log in" wrappingWidth="297.0">
          <font>
-            <Font name="System Bold" size="32.0" />
+            <Font name="System Bold" size="40.0" />
          </font>
       </Text>
-      <TextField fx:id="teacherEmail" layoutX="226.0" layoutY="196.0" prefHeight="34.0" prefWidth="265.0" promptText="insert email" />
-      <Button fx:id="teacherLoginButton" layoutX="306.0" layoutY="312.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#teacherLogin" prefHeight="43.0" prefWidth="106.0" style="-fx-background-color: blue; -fx-background-radius: 55;" text="Log in" textFill="#f8f8f8" />
-      <PasswordField fx:id="teacherPass" layoutX="226.0" layoutY="251.0" prefHeight="34.0" prefWidth="265.0" promptText="insert password" />
-      <Button fx:id="teacherbackButton" layoutX="26.0" layoutY="27.0" mnemonicParsing="false" onAction="#teacherBackButton" style="-fx-background-color: #227347;" text="Home" textFill="WHITE" />
+      <TextField fx:id="teacherEmail" layoutX="284.0" layoutY="298.0" prefHeight="52.0" prefWidth="333.0" promptText="insert email" />
+      <Button fx:id="teacherLoginButton" layoutX="384.0" layoutY="475.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#teacherLogin" prefHeight="65.0" prefWidth="133.0" style="-fx-background-color: blue; -fx-background-radius: 55;" text="Log in" textFill="#f8f8f8" />
+      <PasswordField fx:id="teacherPass" layoutX="284.0" layoutY="382.0" prefHeight="52.0" prefWidth="333.0" promptText="insert password" />
+      <Button fx:id="teacherbackButton" layoutX="33.0" layoutY="41.0" mnemonicParsing="false" onAction="#teacherBackButton" style="-fx-background-color: #227347;" text="Home" textFill="WHITE" />
    </children>
 </Pane>

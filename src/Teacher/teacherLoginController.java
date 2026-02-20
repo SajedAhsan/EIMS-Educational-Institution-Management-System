@@ -67,6 +67,10 @@ public class teacherLoginController {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("TeacherDashboard.fxml"));
                 Parent root = loader.load();
                 
+                // Pass the teacher email to the dashboard controller
+                teacherDashboardController controller = loader.getController();
+                controller.setTeacherEmail(email);
+                
                 Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
                 stage.setScene(new Scene(root));
                 stage.show();

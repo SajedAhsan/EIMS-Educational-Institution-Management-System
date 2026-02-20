@@ -67,6 +67,9 @@ public class studentLoginController {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("StudentDashboard.fxml"));
                 Parent root = loader.load();
                 
+                studentDashboardController controller = loader.getController();
+                controller.setStudentEmail(email);
+                
                 Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
                 stage.setScene(new Scene(root));
                 stage.show();
