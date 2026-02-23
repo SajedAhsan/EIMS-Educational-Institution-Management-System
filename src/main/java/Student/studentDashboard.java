@@ -1,4 +1,4 @@
-package main.java.Student;
+package Student;
 
 // public class StudentDashboard {
     

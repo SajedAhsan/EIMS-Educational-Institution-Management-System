@@ -1,10 +1,10 @@
-package main.java.Student;
+package Student;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
-import main.java.database.DatabaseManager;
+import database.DatabaseManager;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;

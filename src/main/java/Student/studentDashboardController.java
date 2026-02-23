@@ -1,4 +1,4 @@
-package main.java.Student;
+package Student;
 
 import java.io.IOException;
 

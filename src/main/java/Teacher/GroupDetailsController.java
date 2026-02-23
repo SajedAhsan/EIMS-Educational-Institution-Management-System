@@ -1,6 +1,6 @@
-package main.java.Teacher;
+package Teacher;
 
-import main.java.database.DatabaseManager;
+import database.DatabaseManager;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;

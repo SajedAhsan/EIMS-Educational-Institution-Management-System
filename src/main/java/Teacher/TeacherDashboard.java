@@ -1,4 +1,4 @@
-package main.java.Teacher;
+package Teacher;
 
 // public class TeacherDashboard {
     

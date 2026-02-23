@@ -1,4 +1,4 @@
-package main.java.Teacher;
+package Teacher;
 
 import java.io.IOException;
 import javafx.event.ActionEvent;

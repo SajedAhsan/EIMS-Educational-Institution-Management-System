@@ -1,8 +1,8 @@
-package main.java.Student;
+package Student;
 
 import java.io.IOException;
 
-import main.java.database.AuthenticationService;
+import database.AuthenticationService;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;

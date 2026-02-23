@@ -1,6 +1,6 @@
-package main.java.Teacher;
+package Teacher;
 
-import main.java.database.AuthenticationService;
+import database.AuthenticationService;
 import java.io.IOException;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
