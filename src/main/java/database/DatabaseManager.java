@@ -104,6 +104,27 @@ public class DatabaseManager {
                     "FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE)";
             stmt.execute(createAssetsTable);
             
+            // Add extended profile columns to students table if they don't exist
+            String[] alterColumns = {
+                "ALTER TABLE students ADD COLUMN IF NOT EXISTS student_no VARCHAR(50)",
+                "ALTER TABLE students ADD COLUMN IF NOT EXISTS level_term VARCHAR(100)",
+                "ALTER TABLE students ADD COLUMN IF NOT EXISTS mobile_number VARCHAR(50)",
+                "ALTER TABLE students ADD COLUMN IF NOT EXISTS bank_account VARCHAR(100)",
+                "ALTER TABLE students ADD COLUMN IF NOT EXISTS phone_number VARCHAR(50)",
+                "ALTER TABLE students ADD COLUMN IF NOT EXISTS mobile_banking VARCHAR(100)",
+                "ALTER TABLE students ADD COLUMN IF NOT EXISTS present_address TEXT",
+                "ALTER TABLE students ADD COLUMN IF NOT EXISTS permanent_address TEXT",
+                "ALTER TABLE students ADD COLUMN IF NOT EXISTS contact_person TEXT",
+                "ALTER TABLE students ADD COLUMN IF NOT EXISTS birth_reg_no VARCHAR(100)",
+                "ALTER TABLE students ADD COLUMN IF NOT EXISTS birth_date VARCHAR(50)",
+                "ALTER TABLE students ADD COLUMN IF NOT EXISTS nid VARCHAR(50)",
+                "ALTER TABLE students ADD COLUMN IF NOT EXISTS name_bangla VARCHAR(255)",
+                "ALTER TABLE students ADD COLUMN IF NOT EXISTS photo_path VARCHAR(500)"
+            };
+            for (String alter : alterColumns) {
+                stmt.execute(alter);
+            }
+
             System.out.println("Database tables initialized successfully.");
         } catch (SQLException e) {
             e.printStackTrace();
@@ -376,7 +397,89 @@ public class DatabaseManager {
         }
         return -1;
     }
-    
+
+    // ── Student profile ──────────────────────────────────────────────────────
+
+    public StudentProfileData getStudentProfile(String email) throws SQLException {
+        String sql = "SELECT name, email, student_no, level_term, mobile_number, bank_account, " +
+                     "phone_number, mobile_banking, present_address, permanent_address, " +
+                     "contact_person, birth_reg_no, birth_date, nid, name_bangla, photo_path " +
+                     "FROM students WHERE email = ?";
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
+            pstmt.setString(1, email);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return new StudentProfileData(
+                        rs.getString("name"),
+                        rs.getString("email"),
+                        rs.getString("student_no"),
+                        rs.getString("level_term"),
+                        rs.getString("mobile_number"),
+                        rs.getString("bank_account"),
+                        rs.getString("phone_number"),
+                        rs.getString("mobile_banking"),
+                        rs.getString("present_address"),
+                        rs.getString("permanent_address"),
+                        rs.getString("contact_person"),
+                        rs.getString("birth_reg_no"),
+                        rs.getString("birth_date"),
+                        rs.getString("nid"),
+                        rs.getString("name_bangla"),
+                        rs.getString("photo_path")
+                    );
+                }
+            }
+        }
+        return null;
+    }
+
+    public void updateStudentProfile(String email, StudentProfileData p) throws SQLException {
+        String sql = "UPDATE students SET name=?, student_no=?, level_term=?, mobile_number=?, " +
+                     "bank_account=?, phone_number=?, mobile_banking=?, present_address=?, " +
+                     "permanent_address=?, contact_person=?, birth_reg_no=?, birth_date=?, " +
+                     "nid=?, name_bangla=?, photo_path=? WHERE email=?";
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
+            pstmt.setString(1,  p.getName());
+            pstmt.setString(2,  p.getStudentNo());
+            pstmt.setString(3,  p.getLevelTerm());
+            pstmt.setString(4,  p.getMobileNumber());
+            pstmt.setString(5,  p.getBankAccount());
+            pstmt.setString(6,  p.getPhoneNumber());
+            pstmt.setString(7,  p.getMobileBanking());
+            pstmt.setString(8,  p.getPresentAddress());
+            pstmt.setString(9,  p.getPermanentAddress());
+            pstmt.setString(10, p.getContactPerson());
+            pstmt.setString(11, p.getBirthRegNo());
+            pstmt.setString(12, p.getBirthDate());
+            pstmt.setString(13, p.getNid());
+            pstmt.setString(14, p.getNameBangla());
+            pstmt.setString(15, p.getPhotoPath());
+            pstmt.setString(16, email);
+            pstmt.executeUpdate();
+        }
+    }
+
+    /**
+     * @return true if the old password matched and the update succeeded.
+     */
+    public boolean updateStudentPassword(String email, String oldPassword, String newPassword) throws SQLException {
+        String check = "SELECT id FROM students WHERE email=? AND password=?";
+        try (PreparedStatement ps = getConnection().prepareStatement(check)) {
+            ps.setString(1, email);
+            ps.setString(2, oldPassword);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) return false;
+            }
+        }
+        String update = "UPDATE students SET password=? WHERE email=?";
+        try (PreparedStatement ps = getConnection().prepareStatement(update)) {
+            ps.setString(1, newPassword);
+            ps.setString(2, email);
+            ps.executeUpdate();
+        }
+        return true;
+    }
+
     public void closeConnection() {
         try {
             if (connection != null && !connection.isClosed()) {
@@ -485,5 +588,59 @@ public class DatabaseManager {
         public java.sql.Timestamp getCreatedAt() { return createdAt; }
         public String getTeacherName() { return teacherName; }
         public String getTeacherEmail() { return teacherEmail; }
+    }
+
+    // ── StudentProfileData ────────────────────────────────────────────────────
+    public static class StudentProfileData {
+        private String name, email, studentNo, levelTerm, mobileNumber, bankAccount;
+        private String phoneNumber, mobileBanking, presentAddress, permanentAddress;
+        private String contactPerson, birthRegNo, birthDate, nid, nameBangla, photoPath;
+
+        public StudentProfileData(String name, String email, String studentNo, String levelTerm,
+                                   String mobileNumber, String bankAccount, String phoneNumber,
+                                   String mobileBanking, String presentAddress, String permanentAddress,
+                                   String contactPerson, String birthRegNo, String birthDate,
+                                   String nid, String nameBangla, String photoPath) {
+            this.name = name; this.email = email; this.studentNo = studentNo;
+            this.levelTerm = levelTerm; this.mobileNumber = mobileNumber;
+            this.bankAccount = bankAccount; this.phoneNumber = phoneNumber;
+            this.mobileBanking = mobileBanking; this.presentAddress = presentAddress;
+            this.permanentAddress = permanentAddress; this.contactPerson = contactPerson;
+            this.birthRegNo = birthRegNo; this.birthDate = birthDate;
+            this.nid = nid; this.nameBangla = nameBangla; this.photoPath = photoPath;
+        }
+
+        public String getName()            { return name; }
+        public String getEmail()           { return email; }
+        public String getStudentNo()       { return studentNo; }
+        public String getLevelTerm()       { return levelTerm; }
+        public String getMobileNumber()    { return mobileNumber; }
+        public String getBankAccount()     { return bankAccount; }
+        public String getPhoneNumber()     { return phoneNumber; }
+        public String getMobileBanking()   { return mobileBanking; }
+        public String getPresentAddress()  { return presentAddress; }
+        public String getPermanentAddress(){ return permanentAddress; }
+        public String getContactPerson()   { return contactPerson; }
+        public String getBirthRegNo()      { return birthRegNo; }
+        public String getBirthDate()       { return birthDate; }
+        public String getNid()             { return nid; }
+        public String getNameBangla()      { return nameBangla; }
+        public String getPhotoPath()       { return photoPath; }
+
+        public void setName(String v)            { name = v; }
+        public void setStudentNo(String v)       { studentNo = v; }
+        public void setLevelTerm(String v)       { levelTerm = v; }
+        public void setMobileNumber(String v)    { mobileNumber = v; }
+        public void setBankAccount(String v)     { bankAccount = v; }
+        public void setPhoneNumber(String v)     { phoneNumber = v; }
+        public void setMobileBanking(String v)   { mobileBanking = v; }
+        public void setPresentAddress(String v)  { presentAddress = v; }
+        public void setPermanentAddress(String v){ permanentAddress = v; }
+        public void setContactPerson(String v)   { contactPerson = v; }
+        public void setBirthRegNo(String v)      { birthRegNo = v; }
+        public void setBirthDate(String v)       { birthDate = v; }
+        public void setNid(String v)             { nid = v; }
+        public void setNameBangla(String v)      { nameBangla = v; }
+        public void setPhotoPath(String v)         { photoPath = v; }
     }
 }

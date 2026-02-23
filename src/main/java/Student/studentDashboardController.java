@@ -21,6 +21,22 @@ public class studentDashboardController {
     }
     
     @FXML
+    void handleProfile(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Student/StudentProfile.fxml"));
+            Parent root = loader.load();
+            StudentProfileController ctrl = loader.getController();
+            ctrl.setStudentEmail(studentEmail);
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert(AlertType.ERROR, "Navigation Error", "Failed to open Profile: " + e.getMessage());
+        }
+    }
+
+    @FXML
     void handleMyGroups(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("StudentGroupsList.fxml"));

@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="700.0" prefWidth="900.0"
+            xmlns="http://javafx.com/javafx/25"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="Student.StudentProfileController">
+  <children>
+    <VBox AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0"
+          AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+
+      <!-- ── Top navigation bar ──────────────────────────────────────── -->
+      <HBox prefHeight="50" alignment="CENTER_LEFT" spacing="15"
+            style="-fx-background-color: #2c3e50;">
+        <padding><Insets top="8" bottom="8" left="15" right="15"/></padding>
+        <Button fx:id="backButton" text="← Back to Dashboard"
+                onAction="#handleBack"
+                style="-fx-background-color: #0088ff; -fx-text-fill: white;
+                       -fx-font-weight: bold; -fx-font-size: 13;
+                       -fx-cursor: hand;"/>
+        <Label text="Student Profile"
+               style="-fx-text-fill: white; -fx-font-size: 15; -fx-font-weight: bold;"/>
+      </HBox>
+
+      <!-- ── Scrollable body ─────────────────────────────────────────── -->
+      <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
+                  style="-fx-background-color: white;">
+        <content>
+          <VBox spacing="18" style="-fx-background-color: white;">
+            <padding><Insets top="20" bottom="30" left="30" right="30"/></padding>
+
+            <!-- Title bar -->
+            <HBox alignment="CENTER"
+                  style="-fx-background-color: #dce9f5;
+                         -fx-border-color: #aaaaaa; -fx-border-width: 1;">
+              <padding><Insets top="8" bottom="8" left="10" right="10"/></padding>
+              <Label text="Student's Contact Information"
+                     style="-fx-font-size: 15; -fx-font-weight: bold;"/>
+            </HBox>
+
+            <!-- ── Main info row ───────────────────────────────────── -->
+            <HBox spacing="20" alignment="TOP_LEFT">
+
+              <!-- Photo box – click to upload JPG -->
+              <StackPane fx:id="photoBox"
+                         prefWidth="130" prefHeight="130"
+                         minWidth="130"  minHeight="130"
+                         maxWidth="130"  maxHeight="130"
+                         onMouseClicked="#handlePhotoClick"
+                         style="-fx-background-color: #cccccc;
+                                -fx-border-color: #888888; -fx-border-width: 1;
+                                -fx-cursor: hand;">
+                <ImageView fx:id="photoView" fitWidth="130" fitHeight="130"
+                           preserveRatio="false"/>
+                <Label fx:id="photoLabel" text="Click to&#10;add photo"
+                       style="-fx-text-fill: #444444; -fx-font-size: 11;
+                              -fx-text-alignment: center;"
+                       wrapText="true" maxWidth="120"
+                       StackPane.alignment="CENTER"/>
+              </StackPane>
+
+              <!-- Centre column – main fields -->
+              <GridPane hgap="8" vgap="10" HBox.hgrow="ALWAYS">
+                <columnConstraints>
+                  <ColumnConstraints minWidth="190" prefWidth="200"/>
+                  <ColumnConstraints minWidth="10" prefWidth="12"/>
+                  <ColumnConstraints prefWidth="300" hgrow="ALWAYS"/>
+                </columnConstraints>
+
+                <!-- row 0: Name -->
+                <Label text="Name" GridPane.rowIndex="0" GridPane.columnIndex="0"
+                       style="-fx-font-weight: bold;"/>
+                <Label text=":" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                <Label fx:id="labelName" text="Dummy Name"
+                       GridPane.rowIndex="0" GridPane.columnIndex="2"
+                       wrapText="true"/>
+
+                <!-- row 1: Level/Term -->
+                <Label text="Level/Term" GridPane.rowIndex="1" GridPane.columnIndex="0"
+                       style="-fx-font-weight: bold;"/>
+                <Label text=":" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                <Label fx:id="labelLevelTerm" text="Dummy X"
+                       GridPane.rowIndex="1" GridPane.columnIndex="2"/>
+
+                <!-- row 2: Mobile Number -->
+                <Label text="Mobile Number" GridPane.rowIndex="2" GridPane.columnIndex="0"
+                       style="-fx-font-weight: bold;"/>
+                <Label text=":" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                <Label fx:id="labelMobileNumber" text="Dummy X"
+                       GridPane.rowIndex="2" GridPane.columnIndex="2"/>
+
+                <!-- row 3: Email Address -->
+                <Label text="Email Address" GridPane.rowIndex="3" GridPane.columnIndex="0"
+                       style="-fx-font-weight: bold;"/>
+                <Label text=":" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                <Label fx:id="labelEmail" text="Dummy X"
+                       GridPane.rowIndex="3" GridPane.columnIndex="2"/>
+
+                <!-- row 4: Mobile Banking Account -->
+                <Label text="Mobile Banking Account" GridPane.rowIndex="4" GridPane.columnIndex="0"
+                       style="-fx-font-weight: bold;"/>
+                <Label text=":" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                <Label fx:id="labelMobileBanking" text="Dummy X"
+                       GridPane.rowIndex="4" GridPane.columnIndex="2"/>
+
+                <!-- row 5: Present/Residential Address -->
+                <Label text="Present/Residential Address"
+                       GridPane.rowIndex="5" GridPane.columnIndex="0"
+                       style="-fx-font-weight: bold;" wrapText="true" maxWidth="195"/>
+                <Label text=":" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+                <Label fx:id="labelPresentAddress" text="Dummy X"
+                       GridPane.rowIndex="5" GridPane.columnIndex="2"
+                       wrapText="true"/>
+
+                <!-- row 6: Permanent Address -->
+                <Label text="Permanent Address"
+                       GridPane.rowIndex="6" GridPane.columnIndex="0"
+                       style="-fx-font-weight: bold;"/>
+                <Label text=":" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+                <Label fx:id="labelPermanentAddress" text="Dummy X"
+                       GridPane.rowIndex="6" GridPane.columnIndex="2"
+                       wrapText="true"/>
+
+                <!-- row 7: Contact Person -->
+                <Label text="Contact Person's Name,&#10;Address &amp; Mobile Number"
+                       GridPane.rowIndex="7" GridPane.columnIndex="0"
+                       style="-fx-font-weight: bold;" wrapText="true" maxWidth="195"/>
+                <Label text=":" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
+                <Label fx:id="labelContactPerson" text="Dummy X"
+                       GridPane.rowIndex="7" GridPane.columnIndex="2"
+                       wrapText="true"/>
+
+                <!-- row 8: Birth Registration No -->
+                <Label text="Birth Registration No"
+                       GridPane.rowIndex="8" GridPane.columnIndex="0"
+                       style="-fx-font-weight: bold;"/>
+                <Label text=":" GridPane.rowIndex="8" GridPane.columnIndex="1"/>
+                <Label fx:id="labelBirthRegNo" text="Dummy X"
+                       GridPane.rowIndex="8" GridPane.columnIndex="2"/>
+
+                <!-- row 9: Birth Date -->
+                <Label text="Birth Date" GridPane.rowIndex="9" GridPane.columnIndex="0"
+                       style="-fx-font-weight: bold;"/>
+                <Label text=":" GridPane.rowIndex="9" GridPane.columnIndex="1"/>
+                <Label fx:id="labelBirthDate" text="Dummy X"
+                       GridPane.rowIndex="9" GridPane.columnIndex="2"/>
+
+                <!-- row 10: NID -->
+                <Label text="NID" GridPane.rowIndex="10" GridPane.columnIndex="0"
+                       style="-fx-font-weight: bold;"/>
+                <Label text=":" GridPane.rowIndex="10" GridPane.columnIndex="1"/>
+                <Label fx:id="labelNid" text="Dummy X"
+                       GridPane.rowIndex="10" GridPane.columnIndex="2"/>
+
+                <!-- row 11: Name (Bangla) -->
+                <Label text="Name (Bangla)" GridPane.rowIndex="11" GridPane.columnIndex="0"
+                       style="-fx-font-weight: bold;"/>
+                <Label text=":" GridPane.rowIndex="11" GridPane.columnIndex="1"/>
+                <Label fx:id="labelNameBangla" text="Dummy X"
+                       GridPane.rowIndex="11" GridPane.columnIndex="2"/>
+              </GridPane>
+
+              <!-- Right column – Student No / Bank / Phone -->
+              <GridPane hgap="8" vgap="10">
+                <columnConstraints>
+                  <ColumnConstraints minWidth="120" prefWidth="130"/>
+                  <ColumnConstraints minWidth="10" prefWidth="12"/>
+                  <ColumnConstraints prefWidth="160"/>
+                </columnConstraints>
+
+                <!-- row 0: Student No -->
+                <Label text="Student No" GridPane.rowIndex="0" GridPane.columnIndex="0"
+                       style="-fx-font-weight: bold;"/>
+                <Label text=":" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                <Label fx:id="labelStudentNo" text="Dummy X"
+                       GridPane.rowIndex="0" GridPane.columnIndex="2"/>
+
+                <!-- row 1: Bank Account Number -->
+                <Label text="Bank Account&#10;Number"
+                       GridPane.rowIndex="1" GridPane.columnIndex="0"
+                       style="-fx-font-weight: bold;" wrapText="true" maxWidth="125"/>
+                <Label text=":" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                <Label fx:id="labelBankAccount" text="Dummy X"
+                       GridPane.rowIndex="1" GridPane.columnIndex="2" wrapText="true"/>
+
+                <!-- row 2: Phone Number -->
+                <Label text="Phone Number" GridPane.rowIndex="2" GridPane.columnIndex="0"
+                       style="-fx-font-weight: bold;"/>
+                <Label text=":" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                <Label fx:id="labelPhoneNumber" text="Dummy X"
+                       GridPane.rowIndex="2" GridPane.columnIndex="2"/>
+              </GridPane>
+            </HBox>
+
+            <Separator/>
+
+            <!-- ── Action buttons ──────────────────────────────────── -->
+            <HBox spacing="15" alignment="CENTER_RIGHT">
+              <Button fx:id="editButton" text="Edit Contact Information"
+                      onAction="#handleEdit"
+                      style="-fx-background-color: #e0e0e0;
+                             -fx-font-weight: bold; -fx-cursor: hand;
+                             -fx-padding: 6 14 6 14;"/>
+              <Button fx:id="changePasswordButton" text="Change Password"
+                      onAction="#handleChangePassword"
+                      style="-fx-background-color: #ff9800; -fx-text-fill: white;
+                             -fx-font-weight: bold; -fx-cursor: hand;
+                             -fx-padding: 6 14 6 14;"/>
+            </HBox>
+
+          </VBox>
+        </content>
+      </ScrollPane>
+    </VBox>
+  </children>
+</AnchorPane>
