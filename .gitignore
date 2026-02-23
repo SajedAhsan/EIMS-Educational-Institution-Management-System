@@ -17,7 +17,6 @@ release.properties
 dependency-reduced-pom.xml
 buildNumber.properties
 .mvn/timing.properties
-.mvn/wrapper/maven-wrapper.jar
 
 # Database files (auto-generated on first run)
 *.mv.db
@@ -49,6 +48,7 @@ Thumbs.db
 *.rar
 
 # CRITICAL: Whitelist required libraries for portability
+!.mvn/wrapper/maven-wrapper.jar
 !lib/**/*.jar
 !javafx-sdk-*/lib/*.jar
 !javafx-sdk-*/lib/*.properties
