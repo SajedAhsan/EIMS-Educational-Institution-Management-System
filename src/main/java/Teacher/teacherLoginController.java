@@ -1,8 +1,7 @@
-package Student;
+package main.java.Teacher;
 
+import main.java.database.AuthenticationService;
 import java.io.IOException;
-
-import database.AuthenticationService;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -16,28 +15,28 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
-public class studentLoginController {
+public class teacherLoginController {
 
     @FXML
-    private Button backButton;
+    private Button teacherbackButton;
 
     @FXML
-    private TextField studentEmail;
+    private TextField teacherEmail;
 
     @FXML
-    private Button studentLoginButton;
+    private Button teacherLoginButton;
 
     @FXML
-    private PasswordField studentPass;
+    private PasswordField teacherPass;
     
     private AuthenticationService authService;
     
-    public studentLoginController() {
+    public teacherLoginController() {
         authService = new AuthenticationService();
     }
 
     @FXML
-    void stdBackButton(ActionEvent event) throws IOException {
+    void teacherBackButton(ActionEvent event) throws IOException {
         Parent root = FXMLLoader.load(getClass().getResource("../startPage.fxml"));
 
         Stage stage = (Stage) ((Node) event.getSource())
@@ -47,28 +46,29 @@ public class studentLoginController {
         stage.setScene(new Scene(root));
         stage.show();
     }
-
+    
     @FXML
-    void studentLogin(ActionEvent event) {
-        String email = studentEmail.getText().trim();
-        String password = studentPass.getText();
+    void teacherLogin(ActionEvent event) {
+        String email = teacherEmail.getText().trim();
+        String password = teacherPass.getText();
         
         if (email.isEmpty() || password.isEmpty()) {
             showAlert(AlertType.ERROR, "Login Error", "Please fill in all fields");
             return;
         }
         
-        if (authService.authenticateStudent(email, password)) {
-            String studentName = authService.getStudentName(email);
+        if (authService.authenticateTeacher(email, password)) {
+            String teacherName = authService.getTeacherName(email);
             showAlert(AlertType.INFORMATION, "Login Successful", 
-                     "Welcome, " + (studentName != null ? studentName : "Student") + "!");
+                     "Welcome, " + (teacherName != null ? teacherName : "Teacher") + "!");
             
             try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("StudentDashboard.fxml"));
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("TeacherDashboard.fxml"));
                 Parent root = loader.load();
                 
-                studentDashboardController controller = loader.getController();
-                controller.setStudentEmail(email);
+                // Pass the teacher email to the dashboard controller
+                teacherDashboardController controller = loader.getController();
+                controller.setTeacherEmail(email);
                 
                 Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
                 stage.setScene(new Scene(root));
@@ -76,11 +76,11 @@ public class studentLoginController {
             } catch (IOException e) {
                 e.printStackTrace();
                 showAlert(AlertType.ERROR, "Navigation Error", 
-                         "Failed to load Student Dashboard: " + e.getMessage());
+                         "Failed to load Teacher Dashboard: " + e.getMessage());
             }
         } else {
             showAlert(AlertType.ERROR, "Login Failed", "Invalid email or password");
-            studentPass.clear();
+            teacherPass.clear();
         }
     }
     
@@ -92,5 +92,3 @@ public class studentLoginController {
         alert.showAndWait();
     }
 }
-
-

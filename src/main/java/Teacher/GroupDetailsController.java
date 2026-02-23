@@ -1,12 +1,10 @@
-package Teacher;
+package main.java.Teacher;
 
+import main.java.database.DatabaseManager;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.List;
-
-import database.DatabaseManager;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;

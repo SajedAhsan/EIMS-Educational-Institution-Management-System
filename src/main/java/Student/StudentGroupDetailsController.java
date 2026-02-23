@@ -1,4 +1,4 @@
-package Student;
+package main.java.Student;
 
 import java.awt.Desktop;
 import java.io.File;
@@ -9,7 +9,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import database.DatabaseManager;
+import main.java.database.DatabaseManager;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;

@@ -1,7 +1,6 @@
-package Student;
+package main.java.Teacher;
 
 import java.io.IOException;
-
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -12,29 +11,57 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.stage.Stage;
 
-public class studentDashboardController {
+public class teacherDashboardController {
     
-    private String studentEmail;
+    private String teacherEmail;
     
-    public void setStudentEmail(String email) {
-        this.studentEmail = email;
+    public void setTeacherEmail(String email) {
+        this.teacherEmail = email;
     }
     
     @FXML
-    void handleMyGroups(ActionEvent event) {
+    void handleProfileButton(ActionEvent event) {
+        showAlert(AlertType.INFORMATION, "Profile", "Profile feature coming soon!");
+    }
+    
+    @FXML
+    void handleMarkingButton(ActionEvent event) {
+        showAlert(AlertType.INFORMATION, "Marking", "Marking feature coming soon!");
+    }
+    
+    @FXML
+    void handleGroupsButton(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("StudentGroupsList.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("GroupsList.fxml"));
             Parent root = loader.load();
             
-            StudentGroupsListController controller = loader.getController();
-            controller.setStudentEmail(studentEmail);
+            GroupsListController controller = loader.getController();
+            controller.setTeacherEmail(teacherEmail);
             
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();
-            showAlert(AlertType.ERROR, "Navigation Error", "Failed to open My Groups: " + e.getMessage());
+            showAlert(AlertType.ERROR, "Navigation Error", "Failed to load groups: " + e.getMessage());
+        }
+    }
+    
+    @FXML
+    void handleCreateGroupButton(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("CreateGroup.fxml"));
+            Parent root = loader.load();
+            
+            CreateGroupController controller = loader.getController();
+            controller.setTeacherEmail(teacherEmail);
+            
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert(AlertType.ERROR, "Navigation Error", "Failed to load create group page: " + e.getMessage());
         }
     }
     

@@ -1,11 +1,10 @@
-package Student;
+package main.java.Teacher;
 
+import main.java.database.DatabaseManager;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
-
-import database.DatabaseManager;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -21,7 +20,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 
-public class StudentGroupsListController {
+public class GroupsListController {
     
     @FXML
     private ListView<GroupItem> groupsList;
@@ -30,7 +29,7 @@ public class StudentGroupsListController {
     private Label statusLabel;
     
     private ObservableList<GroupItem> groups;
-    private String studentEmail;
+    private String teacherEmail;
     private DatabaseManager dbManager;
     
     public void initialize() {
@@ -39,30 +38,30 @@ public class StudentGroupsListController {
         groupsList.setItems(groups);
     }
     
-    public void setStudentEmail(String email) {
-        this.studentEmail = email;
+    public void setTeacherEmail(String email) {
+        this.teacherEmail = email;
         loadGroups();
     }
     
     private void loadGroups() {
         try {
             groups.clear();
-            int studentId = dbManager.getStudentIdByEmail(studentEmail);
+            int teacherId = dbManager.getTeacherIdByEmail(teacherEmail);
             
-            if (studentId == -1) {
-                statusLabel.setText("Student not found");
+            if (teacherId == -1) {
+                statusLabel.setText("Teacher not found");
                 return;
             }
             
-            List<DatabaseManager.GroupData> groupList = dbManager.getGroupsByStudent(studentId);
+            List<DatabaseManager.GroupData> groupList = dbManager.getGroupsByTeacher(teacherId);
             
             for (DatabaseManager.GroupData data : groupList) {
-                GroupItem group = new GroupItem(data.getId(), data.getName());
+                GroupItem group = new GroupItem(data.getId(), data.getName(), data.getCreatedAt());
                 groups.add(group);
             }
             
             if (groups.isEmpty()) {
-                statusLabel.setText("No groups found. You haven't been added to any groups yet!");
+                statusLabel.setText("No groups found. Create a new group to get started!");
             } else {
                 statusLabel.setText(groups.size() + " group(s) found");
             }
@@ -87,22 +86,27 @@ public class StudentGroupsListController {
     void handleViewGroup(ActionEvent event) {
         GroupItem selected = groupsList.getSelectionModel().getSelectedItem();
         
+        System.out.println("View Group button clicked");
+        
         if (selected == null) {
+            System.out.println("No group selected");
             showAlert(AlertType.WARNING, "No Selection", "Please select a group to view");
             return;
         }
         
+        System.out.println("Opening group: " + selected.getName() + " (ID: " + selected.getId() + ")");
         openGroupDetails(selected);
     }
     
     private void openGroupDetails(GroupItem group) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("StudentGroupDetails.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("GroupDetails.fxml"));
             Parent root = loader.load();
             
-            StudentGroupDetailsController controller = loader.getController();
+            GroupDetailsController controller = loader.getController();
+            // Set both values before triggering the load
             controller.setGroupId(group.getId());
-            controller.setStudentEmail(studentEmail);
+            controller.setTeacherEmail(teacherEmail);
             
             Stage stage = (Stage) groupsList.getScene().getWindow();
             stage.setScene(new Scene(root));
@@ -124,11 +128,11 @@ public class StudentGroupsListController {
     @FXML
     void handleBack(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("StudentDashboard.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("TeacherDashboard.fxml"));
             Parent root = loader.load();
             
-            studentDashboardController controller = loader.getController();
-            controller.setStudentEmail(studentEmail);
+            teacherDashboardController controller = loader.getController();
+            controller.setTeacherEmail(teacherEmail);
             
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
@@ -147,14 +151,16 @@ public class StudentGroupsListController {
         alert.showAndWait();
     }
     
-    // Inner class for displaying group items without timestamp
+    // Inner class to represent a group
     public static class GroupItem {
         private int id;
         private String name;
+        private Timestamp createdAt;
         
-        public GroupItem(int id, String name) {
+        public GroupItem(int id, String name, Timestamp createdAt) {
             this.id = id;
             this.name = name;
+            this.createdAt = createdAt;
         }
         
         public int getId() {
@@ -163,6 +169,10 @@ public class StudentGroupsListController {
         
         public String getName() {
             return name;
+        }
+        
+        public Timestamp getCreatedAt() {
+            return createdAt;
         }
         
         @Override

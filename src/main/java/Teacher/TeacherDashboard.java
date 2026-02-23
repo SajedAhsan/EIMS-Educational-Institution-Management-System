@@ -1,3 +1,5 @@
+package main.java.Teacher;
+
 // public class TeacherDashboard {
     
 //     public void show() {

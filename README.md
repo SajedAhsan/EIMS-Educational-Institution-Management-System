@@ -4,33 +4,57 @@ A JavaFX-based management system for educational institutions with H2 database i
 
 ## 📋 Requirements
 
-- **Java Development Kit (JDK)** 11 or higher
+- **Java Development Kit (JDK)** 17 or higher
+- **Maven** 3.6+ (optional - Maven wrapper included for portability)
+
+### Legacy Build Requirements (if not using Maven)
 - **JavaFX SDK** 24.0.2 (included in project)
 - **H2 Database** (included in lib folder)
 - **Windows** operating system
 
 ## 🚀 Quick Start
 
+### Method 1: Using Maven (Recommended for Portability)
+
 ```powershell
 # Compile
-.\compile.ps1
+.\maven-compile.ps1
 
 # Run
-.\run.ps1
+.\maven-run.ps1
 ```
 
-## 📁 Project Structure
-
-```
-EIMS/
-├── src/                            # Source files
-│   ├── Main.java                   # Application entry point
-│   ├── StartPageController.java    # Start page controller
-│   ├── startPage.fxml              # Start page UI
-│   ├── database/                   # Database package
-│   │   ├── DatabaseManager.java
-│   │   └── AuthenticationService.java
-│   ├── Student/                    # Student module
+Or use Maven commands directly:
+```powershell
+mvn clea
+│   ├── main/
+│   │   ├── java/                   # Java source files (Maven)
+│   │   │   ├── Main.java           # Application entry point
+│   │   │   ├── StartPageController.java
+│   │   │   ├── database/           # Database package
+│   │   │   │   ├── DatabaseManager.java
+│   │   │   │   └── AuthenticationService.java
+│   │   │   ├── Student/            # Student module
+│   │   │   └── Teacher/            # Teacher module
+│   │   └── resources/              # Resources (Maven)
+│   │       ├── startPage.fxml      # FXML files
+│   │       ├── Student/            # Student FXML files
+│   │       ├── Teacher/            # Teacher FXML files
+│   │       └── images/             # Image assets
+│   │           ├── Teacher.jpg
+│   │           └── Student.jpg
+│   └── [legacy source files]       # Original source structure (kept for compatibility)
+├── lib/                            # External libraries (legacy)
+│   └── h2-2.2.224.jar
+├── javafx-sdk-24.0.2/             # JavaFX SDK (legacy)
+├── target/                         # Maven build output
+├── bin/                            # Legacy build output
+├── pom.xml                         # Maven configuration
+├── mvnw, mvnw.cmd                 # Maven wrapper scripts
+├── maven-compile.ps1              # Maven compile script
+├── maven-run.ps1                  # Maven run script
+├── compile.ps1                    # Legacy compile script
+└── run.ps1                        # Legacy rtudent module
 │   │   ├── studentLoginController.java
 │   │   ├── studentLoginPage.fxml
 │   │   ├── studentDashboardController.java
@@ -67,13 +91,40 @@ EIMS/
 - **Type:** H2 (Embedded)
 - **File:** `eims_db.mv.db` (auto-created on first run)
 - **Connection:** `jdbc:h2:./eims_db`
-- Tables: `teachers`, `students`
+- **Version:** 2.2.224 (managed by Maven or included in lib/)
+- **Tables:** `teachers`, `students`
+
+Maven automatically downloads and manages the H2 dependency. For legacy builds, the H2 JAR is included in the `lib/` folder.
 
 ## 🛠️ Manual Compilation & Execution
 
-### Windows
+### Using Maven
 
-javac --module-path "javafx-sdk-24.0.2\lib" --add-modules javafx.controls,javafx.fxml -cp "lib\h2-2.2.224.jar;resources" -d bin src\*.java src\Student\*.java src\Teacher\*.java src\database\*.java
+**Compile:**
+```powershell
+mvn clean compile
+```
+
+**Run:**
+```powershell
+mvn javafx:run
+```
+
+**Package as JAR:**
+```powershell
+mvn clean package
+```
+
+**Run without Maven installed (using wrapper):**
+```powershell
+.\mvnw.cmd clean compile
+.\mvnw.cmd javafx:run
+```
+
+### Using Legacy Build (Windows)
+
+**Compile:**
+```powershelljavac --module-path "javafx-sdk-24.0.2\lib" --add-modules javafx.controls,javafx.fxml -cp "lib\h2-2.2.224.jar;resources" -d bin src\*.java src\Student\*.java src\Teacher\*.java src\database\*.java
 
 # Copy FXML files
 Copy-Item -Path "src\startPage.fxml" -Destination "bin\" -Force
@@ -100,19 +151,29 @@ java --module-path "javafx-sdk-24.0.2\lib" --add-modules javafx.controls,javafx.
 
 ## ✨ Features
 
+- ✅ **Maven support for true cross-platform portability**
+- ✅ Maven wrapper included - no Maven installation required
+- ✅ Automatic dependency management
 - ✅ Cross-platform compatibility (Windows, Linux, macOS)
 - ✅ Teacher and Student login modules
 - ✅ Database authentication with H2
 - ✅ Automatic table creation and default data insertion
 - ✅ Relative paths - works from any directory
 - ✅ Clean MVC architecture
+- ✅ Legacy build scripts maintained for backward compatibility
 
 ## 🐛 Troubleshooting
 
+### Maven Issues
+- If Maven is not installed, use the wrapper: `.\mvnw.cmd` (Windows) or `./mvnw` (Linux/Mac)
+- Clear Maven cache: `mvn clean` or delete `target/` folder
+- Update dependencies: `mvn clean install -U`
+
 ### Compilation Errors
-- Ensure JDK 11+ is installed: `java -version`
-- Verify JavaFX SDK is in `javafx-sdk-24.0.2` folder
-- Check that H2 jar is in `lib` folder
+- Ensure JDK 17+ is installed: `java -version`
+- For Maven: Check `pom.xml` for correct dependencies
+- For legacy: Verify JavaFX SDK is in `javafx-sdk-24.0.2` folder
+- Check that H2 jar is in `lib` folder (legacy build)
 
 ### Database Issues
 - Delete `eims_db.mv.db` and restart

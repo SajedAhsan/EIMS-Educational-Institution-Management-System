@@ -1,3 +1,5 @@
+package main.java.Student;
+
 // public class StudentDashboard {
     
 //     public void show() {
