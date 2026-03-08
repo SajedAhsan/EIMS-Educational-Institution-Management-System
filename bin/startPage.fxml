@@ -1,48 +1,153 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ButtonBar?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.effect.DropShadow?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.paint.Color?>
+<?import javafx.scene.paint.LinearGradient?>
+<?import javafx.scene.paint.Stop?>
+<?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="900.0" style="-fx-background-color: #35e6e6;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="StartPageController">
+<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="StartPageController">
    <children>
-      <Text fill="#1b1a1a" layoutX="284.0" layoutY="202.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Log in as " textAlignment="CENTER" wrappingWidth="360.0">
-         <font>
-            <Font name="Arial Black" size="56.0" />
-         </font>
-      </Text>
-      <Text layoutX="240.0" layoutY="602.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Teacher" textAlignment="CENTER" wrappingWidth="130.0">
-         <font>
-            <Font name="System Bold" size="25.0" />
-         </font>
-      </Text>
-      <Text layoutX="585.0" layoutY="601.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Student">
-         <font>
-            <Font name="System Bold" size="25.0" />
-         </font>
-      </Text>
-      <ButtonBar layoutX="-23.0" layoutY="40.0" prefHeight="61.0" prefWidth="251.0" />
-      <Button layoutX="173.0" layoutY="262.0" mnemonicParsing="false" onAction="#teacherButton" prefHeight="286.0" prefWidth="235.0" style="-fx-background-color: white;">
-         <graphic>
-            <ImageView fitHeight="272.0" fitWidth="246.0" pickOnBounds="true" preserveRatio="true">
-               <image>
-                  <Image url="@../resources/images/Teacher.jpg" />
-               </image>
-            </ImageView>
-         </graphic>
-      </Button>
-      <Button layoutX="501.0" layoutY="262.0" mnemonicParsing="false" onAction="#studentButton" prefHeight="286.0" prefWidth="235.0" style="-fx-background-color: white;">
-         <graphic>
-            <ImageView fitHeight="272.0" fitWidth="246.0" pickOnBounds="true" preserveRatio="true">
-               <image>
-                  <Image url="@../resources/images/Student.jpg" />
-               </image>
-            </ImageView>
-         </graphic>
-      </Button>
+      <!-- Gradient Background -->
+      <Rectangle arcHeight="0.0" arcWidth="0.0" height="700.0" width="900.0">
+         <fill>
+            <LinearGradient endX="1.0" endY="1.0" startX="0.0" startY="0.0">
+               <stops>
+                  <Stop>
+                     <color>
+                        <Color red="0.2" green="0.5" blue="0.8" />
+                     </color>
+                  </Stop>
+                  <Stop offset="1.0">
+                     <color>
+                        <Color red="0.3" green="0.7" blue="0.9" />
+                     </color>
+                  </Stop>
+               </stops>
+            </LinearGradient>
+         </fill>
+      </Rectangle>
+      
+      <!-- Main Content -->
+      <Pane prefHeight="700.0" prefWidth="900.0">
+         <children>
+            <!-- Header Section -->
+            <VBox alignment="CENTER" layoutX="150.0" layoutY="80.0" prefWidth="600.0" spacing="10.0">
+               <children>
+                  <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" text="Welcome to EIMS" textAlignment="CENTER">
+                     <font>
+                        <Font name="System Bold" size="48.0" />
+                     </font>
+                     <effect>
+                        <DropShadow color="rgba(0, 0, 0, 0.3)" height="10.0" radius="4.5" width="10.0" />
+                     </effect>
+                  </Text>
+                  <Label text="Educational Institution Management System" textFill="WHITE">
+                     <font>
+                        <Font size="18.0" />
+                     </font>
+                  </Label>
+                  <Label text="Select your role to continue" textFill="rgba(255, 255, 255, 0.9)">
+                     <font>
+                        <Font size="16.0" />
+                     </font>
+                     <VBox.margin>
+                        <Insets top="10.0" />
+                     </VBox.margin>
+                  </Label>
+               </children>
+            </VBox>
+            
+            <!-- Cards Container -->
+            <HBox alignment="CENTER" layoutX="125.0" layoutY="280.0" prefWidth="650.0" spacing="50.0">
+               <children>
+                  <!-- Teacher Card -->
+                  <VBox alignment="CENTER" prefHeight="340.0" prefWidth="280.0" spacing="15.0" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 25;">
+                     <effect>
+                        <DropShadow color="rgba(0, 0, 0, 0.25)" height="30.0" radius="14.5" width="30.0" />
+                     </effect>
+                     <children>
+                        <!-- Teacher Image -->
+                        <StackPane prefHeight="200.0" prefWidth="230.0">
+                           <children>
+                              <Rectangle arcHeight="30.0" arcWidth="30.0" fill="WHITE" height="200.0" stroke="#e0e0e0" strokeWidth="2.0" width="230.0" />
+                              <ImageView fitHeight="190.0" fitWidth="220.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../resources/images/Teacher.jpg" />
+                                 </image>
+                              </ImageView>
+                           </children>
+                        </StackPane>
+                        
+                        <!-- Teacher Label -->
+                        <Label text="Teacher Portal" textFill="#333333">
+                           <font>
+                              <Font name="System Bold" size="24.0" />
+                           </font>
+                        </Label>
+                        
+                        <!-- Teacher Button -->
+                        <Button mnemonicParsing="false" onAction="#teacherButton" prefHeight="45.0" prefWidth="230.0" style="-fx-background-color: linear-gradient(to right, #f093fb 0%, #f5576c 100%); -fx-background-radius: 22; -fx-cursor: hand;" text="Login as Teacher" textFill="WHITE">
+                           <font>
+                              <Font name="System Bold" size="14.0" />
+                           </font>
+                           <effect>
+                              <DropShadow color="rgba(245, 87, 108, 0.4)" height="12.0" radius="5.5" width="12.0" />
+                           </effect>
+                        </Button>
+                     </children>
+                  </VBox>
+                  
+                  <!-- Student Card -->
+                  <VBox alignment="CENTER" prefHeight="340.0" prefWidth="280.0" spacing="15.0" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 25;">
+                     <effect>
+                        <DropShadow color="rgba(0, 0, 0, 0.25)" height="30.0" radius="14.5" width="30.0" />
+                     </effect>
+                     <children>
+                        <!-- Student Image -->
+                        <StackPane prefHeight="200.0" prefWidth="230.0">
+                           <children>
+                              <Rectangle arcHeight="30.0" arcWidth="30.0" fill="WHITE" height="200.0" stroke="#e0e0e0" strokeWidth="2.0" width="230.0" />
+                              <ImageView fitHeight="190.0" fitWidth="220.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../resources/images/Student.jpg" />
+                                 </image>
+                              </ImageView>
+                           </children>
+                        </StackPane>
+                        
+                        <!-- Student Label -->
+                        <Label text="Student Portal" textFill="#333333">
+                           <font>
+                              <Font name="System Bold" size="24.0" />
+                           </font>
+                        </Label>
+                        
+                        <!-- Student Button -->
+                        <Button mnemonicParsing="false" onAction="#studentButton" prefHeight="45.0" prefWidth="230.0" style="-fx-background-color: linear-gradient(to right, #667eea 0%, #764ba2 100%); -fx-background-radius: 22; -fx-cursor: hand;" text="Login as Student" textFill="WHITE">
+                           <font>
+                              <Font name="System Bold" size="14.0" />
+                           </font>
+                           <effect>
+                              <DropShadow color="rgba(102, 126, 234, 0.4)" height="12.0" radius="5.5" width="12.0" />
+                           </effect>
+                        </Button>
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+         </children>
+      </Pane>
    </children>
-</Pane>
+</StackPane>

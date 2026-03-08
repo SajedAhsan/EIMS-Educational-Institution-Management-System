@@ -1,22 +1,120 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.effect.DropShadow?>
 <?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.paint.Color?>
+<?import javafx.scene.paint.LinearGradient?>
+<?import javafx.scene.paint.Stop?>
+<?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="900.0" style="-fx-background-color: #35e6e6;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Teacher.teacherLoginController">
+<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Teacher.teacherLoginController">
    <children>
-      <Text layoutX="301.0" layoutY="237.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Teacher Log in" wrappingWidth="297.0">
-         <font>
-            <Font name="System Bold" size="40.0" />
-         </font>
-      </Text>
-      <TextField fx:id="teacherEmail" layoutX="284.0" layoutY="298.0" prefHeight="52.0" prefWidth="333.0" promptText="insert email" />
-      <Button fx:id="teacherLoginButton" layoutX="384.0" layoutY="475.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#teacherLogin" prefHeight="65.0" prefWidth="133.0" style="-fx-background-color: blue; -fx-background-radius: 55;" text="Log in" textFill="#f8f8f8" />
-      <PasswordField fx:id="teacherPass" layoutX="284.0" layoutY="382.0" prefHeight="52.0" prefWidth="333.0" promptText="insert password" />
-      <Button fx:id="teacherbackButton" layoutX="33.0" layoutY="41.0" mnemonicParsing="false" onAction="#teacherBackButton" style="-fx-background-color: #227347;" text="Home" textFill="WHITE" />
+      <!-- Gradient Background -->
+      <Rectangle arcHeight="0.0" arcWidth="0.0" height="700.0" width="900.0">
+         <fill>
+            <LinearGradient endX="1.0" endY="1.0" startX="0.0" startY="0.0">
+               <stops>
+                  <Stop>
+                     <color>
+                        <Color red="0.8" green="0.3" blue="0.4" />
+                     </color>
+                  </Stop>
+                  <Stop offset="1.0">
+                     <color>
+                        <Color red="0.9" green="0.5" blue="0.2" />
+                     </color>
+                  </Stop>
+               </stops>
+            </LinearGradient>
+         </fill>
+      </Rectangle>
+      
+      <!-- Main Content -->
+      <Pane prefHeight="700.0" prefWidth="900.0">
+         <children>
+            <!-- Back Button -->
+            <Button fx:id="teacherbackButton" layoutX="30.0" layoutY="25.0" mnemonicParsing="false" onAction="#teacherBackButton" prefHeight="40.0" prefWidth="90.0" style="-fx-background-color: rgba(255, 255, 255, 0.2); -fx-background-radius: 20; -fx-border-color: white; -fx-border-radius: 20; -fx-border-width: 2; -fx-cursor: hand;" text="← Home" textFill="WHITE">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font>
+            </Button>
+            
+            <!-- Login Card -->
+            <VBox alignment="CENTER" layoutX="250.0" layoutY="150.0" prefHeight="450.0" prefWidth="400.0" spacing="25.0" style="-fx-background-color: white; -fx-background-radius: 25; -fx-padding: 50;">
+               <effect>
+                  <DropShadow color="rgba(0, 0, 0, 0.3)" height="40.0" radius="19.5" width="40.0" />
+               </effect>
+               <children>
+                  <!-- Title -->
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Teacher Portal" textAlignment="CENTER">
+                     <font>
+                        <Font name="System Bold" size="36.0" />
+                     </font>
+                  </Text>
+                  
+                  <!-- Subtitle -->
+                  <Label text="Sign in to continue" textFill="#666666">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+                  
+                  <!-- Email Field -->
+                  <VBox spacing="8.0">
+                     <children>
+                        <Label text="Email Address" textFill="#333333">
+                           <font>
+                              <Font name="System Bold" size="13.0" />
+                           </font>
+                        </Label>
+                        <TextField fx:id="teacherEmail" prefHeight="48.0" prefWidth="300.0" promptText="Enter your email" style="-fx-background-color: #f5f5f5; -fx-background-radius: 12; -fx-border-color: #e0e0e0; -fx-border-radius: 12; -fx-border-width: 1.5; -fx-padding: 12; -fx-font-size: 14px;">
+                           <font>
+                              <Font size="14.0" />
+                           </font>
+                        </TextField>
+                     </children>
+                  </VBox>
+                  
+                  <!-- Password Field -->
+                  <VBox spacing="8.0">
+                     <children>
+                        <Label text="Password" textFill="#333333">
+                           <font>
+                              <Font name="System Bold" size="13.0" />
+                           </font>
+                        </Label>
+                        <PasswordField fx:id="teacherPass" prefHeight="48.0" prefWidth="300.0" promptText="Enter your password" style="-fx-background-color: #f5f5f5; -fx-background-radius: 12; -fx-border-color: #e0e0e0; -fx-border-radius: 12; -fx-border-width: 1.5; -fx-padding: 12; -fx-font-size: 14px;">
+                           <font>
+                              <Font size="14.0" />
+                           </font>
+                        </PasswordField>
+                     </children>
+                  </VBox>
+                  
+                  <!-- Login Button -->
+                  <Button fx:id="teacherLoginButton" mnemonicParsing="false" onAction="#teacherLogin" prefHeight="50.0" prefWidth="300.0" style="-fx-background-color: linear-gradient(to right, #f093fb 0%, #f5576c 100%); -fx-background-radius: 25; -fx-cursor: hand;" text="Sign In" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="16.0" />
+                     </font>
+                     <VBox.margin>
+                        <Insets top="10.0" />
+                     </VBox.margin>
+                     <effect>
+                        <DropShadow color="rgba(245, 87, 108, 0.4)" height="15.0" radius="7.0" width="15.0" />
+                     </effect>
+                  </Button>
+               </children>
+            </VBox>
+         </children>
+      </Pane>
    </children>
-</Pane>
+</StackPane>
