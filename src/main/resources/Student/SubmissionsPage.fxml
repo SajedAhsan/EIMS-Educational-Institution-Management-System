@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox spacing="10.0" style="-fx-background-color: #ffffff; -fx-border-color: #d7deea; -fx-border-radius: 6; -fx-background-radius: 6;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1">
+   <padding>
+      <Insets bottom="14.0" left="14.0" right="14.0" top="14.0" />
+   </padding>
+   <children>
+      <Label text="My Submissions">
+         <font>
+            <Font name="System Bold" size="18.0" />
+         </font>
+      </Label>
+      <Label fx:id="studentSubmissionsStatsLabel" textFill="#475569" />
+      <TableView fx:id="submissionsTable" prefHeight="500.0" VBox.vgrow="ALWAYS">
+         <columns>
+            <TableColumn fx:id="colAssignmentName" prefWidth="260.0" text="Assignment" />
+            <TableColumn fx:id="colSubmissionTime" prefWidth="170.0" text="Submitted At" />
+            <TableColumn fx:id="colStatus" prefWidth="150.0" text="Status" />
+            <TableColumn fx:id="colFile" prefWidth="170.0" text="File" />
+            <TableColumn fx:id="colGrade" prefWidth="120.0" text="Grade" />
+         </columns>
+      </TableView>
+   </children>
+</VBox>

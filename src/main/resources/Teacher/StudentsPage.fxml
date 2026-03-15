@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox spacing="12.0" style="-fx-background-color: #ffffff; -fx-border-color: #d7deea; -fx-border-radius: 6; -fx-background-radius: 6;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1">
+   <padding>
+      <Insets bottom="14.0" left="14.0" right="14.0" top="14.0" />
+   </padding>
+   <children>
+      <Label text="Students">
+         <font>
+            <Font name="System Bold" size="18.0" />
+         </font>
+      </Label>
+      <Label text="Enrolled students in this group" textFill="#64748b" />
+      <TableView fx:id="studentsTable" prefHeight="560.0" prefWidth="830.0">
+         <columns>
+            <TableColumn fx:id="colMemberName" prefWidth="390.0" text="Student Name" />
+            <TableColumn fx:id="colMemberEmail" prefWidth="420.0" text="Email" />
+         </columns>
+      </TableView>
+   </children>
+</VBox>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<HBox spacing="14.0" style="-fx-background-color: #ffffff; -fx-border-color: #d7deea; -fx-border-radius: 6; -fx-background-radius: 6;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1">
+   <padding>
+      <Insets bottom="14.0" left="14.0" right="14.0" top="14.0" />
+   </padding>
+   <children>
+      <VBox spacing="8.0" HBox.hgrow="ALWAYS">
+         <children>
+            <Label text="Submissions">
+               <font>
+                  <Font name="System Bold" size="18.0" />
+               </font>
+            </Label>
+            <Label text="All submissions overview for this group." textFill="#64748b" />
+            <Label fx:id="statsLabel" textFill="#475569" />
+            <HBox alignment="CENTER_LEFT" spacing="12.0">
+               <children>
+                  <Label text="Legend:" textFill="#334155" />
+                  <HBox alignment="CENTER_LEFT" spacing="5.0">
+                     <children>
+                        <Label prefHeight="12.0" prefWidth="16.0" style="-fx-background-color: #ffcccc; -fx-border-color: #d1d5db;" />
+                        <Label text="Plagiarized" textFill="#475569" />
+                     </children>
+                  </HBox>
+                  <HBox alignment="CENTER_LEFT" spacing="5.0">
+                     <children>
+                        <Label prefHeight="12.0" prefWidth="16.0" style="-fx-background-color: #fff3cd; -fx-border-color: #d1d5db;" />
+                        <Label text="Late" textFill="#475569" />
+                     </children>
+                  </HBox>
+                  <HBox alignment="CENTER_LEFT" spacing="5.0">
+                     <children>
+                        <Label prefHeight="12.0" prefWidth="16.0" style="-fx-background-color: #d4edda; -fx-border-color: #d1d5db;" />
+                        <Label text="Graded" textFill="#475569" />
+                     </children>
+                  </HBox>
+               </children>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" spacing="8.0">
+               <children>
+                  <Label text="Filter:" />
+                  <ComboBox fx:id="submissionsFilterCombo" prefWidth="180.0" />
+               </children>
+            </HBox>
+            <TableView fx:id="submissionsTable" prefHeight="520.0" prefWidth="860.0" VBox.vgrow="ALWAYS">
+               <columns>
+                  <TableColumn fx:id="colStudentName" prefWidth="130.0" text="Student Name" />
+                  <TableColumn fx:id="colAssignmentName" prefWidth="185.0" text="Assignment Title" />
+                  <TableColumn fx:id="colAssignmentId" prefWidth="95.0" text="Assignment ID" />
+                  <TableColumn fx:id="colSubmissionTime" prefWidth="145.0" text="Submitted At" />
+                  <TableColumn fx:id="colStatus" prefWidth="110.0" text="Status" />
+                  <TableColumn fx:id="colFile" prefWidth="150.0" text="File Name" />
+                  <TableColumn fx:id="colGrade" prefWidth="80.0" text="Grade" />
+               </columns>
+            </TableView>
+         </children>
+      </VBox>
+      <VBox spacing="10.0" prefWidth="150.0">
+         <children>
+            <Button onAction="#handleDownloadSubmission" prefHeight="36.0" style="-fx-background-color: #0891b2; -fx-text-fill: white; -fx-font-weight: bold;" text="Download" />
+            <Button onAction="#handleEvaluateSubmission" prefHeight="36.0" style="-fx-background-color: #ea580c; -fx-text-fill: white; -fx-font-weight: bold;" text="Evaluate" />
+         </children>
+      </VBox>
+   </children>
+</HBox>

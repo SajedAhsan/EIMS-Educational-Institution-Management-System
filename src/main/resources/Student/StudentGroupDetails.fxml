@@ -1,75 +1,76 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ListView?>
-<?import javafx.scene.control.Separator?>
-<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="900.0" style="-fx-background-color: #f5f5f5;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Student.StudentGroupDetailsController">
-   <children>
-      <Label fx:id="groupNameLabel" layoutX="50.0" layoutY="30.0" text="Group Name">
-         <font>
-            <Font name="System Bold" size="32.0" />
-         </font>
-      </Label>
-      
-      <!-- Teacher Information Section -->
-      <Label layoutX="50.0" layoutY="85.0" text="Created by:">
-         <font>
-            <Font size="14.0" />
-         </font>
-      </Label>
-      <Label fx:id="teacherNameLabel" layoutX="150.0" layoutY="85.0" text="Teacher Name">
-         <font>
-            <Font name="System Bold" size="14.0" />
-         </font>
-      </Label>
-      <Label fx:id="teacherEmailLabel" layoutX="150.0" layoutY="105.0" text="teacher@example.com" textFill="#666666">
-         <font>
-            <Font size="13.0" />
-         </font>
-      </Label>
-      
-      <Separator layoutX="50.0" layoutY="140.0" prefWidth="800.0" />
-      
-      <!-- Group Members Section -->
-      <Label layoutX="50.0" layoutY="160.0" text="Group Members">
-         <font>
-            <Font name="System Bold" size="18.0" />
-         </font>
-      </Label>
-      <ListView fx:id="membersList" layoutX="50.0" layoutY="195.0" prefHeight="180.0" prefWidth="800.0" style="-fx-background-color: white; -fx-border-color: #ddd; -fx-border-radius: 5; -fx-background-radius: 5;" />
-      
-      <Separator layoutX="50.0" layoutY="395.0" prefWidth="800.0" />
-      
-      <!-- Educational Assets Section -->
-      <Label layoutX="50.0" layoutY="415.0" text="Educational Materials">
-         <font>
-            <Font name="System Bold" size="18.0" />
-         </font>
-      </Label>
-      
-      <Label fx:id="assetsStatusLabel" layoutX="50.0" layoutY="450.0" text="No materials shared yet" textFill="#666666">
-         <font>
-            <Font size="13.0" />
-         </font>
-      </Label>
-      
-      <ListView fx:id="assetsList" layoutX="50.0" layoutY="480.0" onMouseClicked="#handleAssetSelection" prefHeight="150.0" prefWidth="800.0" style="-fx-background-color: white; -fx-border-color: #ddd; -fx-border-radius: 5; -fx-background-radius: 5;" />
-      
-      <!-- Buttons -->
-      <Button fx:id="downloadButton" layoutX="730.0" layoutY="645.0" onAction="#handleDownload" prefHeight="40.0" prefWidth="120.0" style="-fx-background-color: #28a745; -fx-background-radius: 5;" text="Download" textFill="WHITE">
-         <font>
-            <Font name="System Bold" size="14.0" />
-         </font>
-      </Button>
-      
-      <Button fx:id="backButton" layoutX="50.0" layoutY="645.0" onAction="#handleBack" prefHeight="40.0" prefWidth="120.0" style="-fx-background-color: #6c757d; -fx-background-radius: 5;" text="Back" textFill="WHITE">
-         <font>
-            <Font name="System Bold" size="14.0" />
-         </font>
-      </Button>
-   </children>
-</AnchorPane>
+<BorderPane prefHeight="760.0" prefWidth="1100.0" style="-fx-background-color: #f4f7fb;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Student.StudentGroupDetailsController">
+   <top>
+      <HBox alignment="CENTER_LEFT" spacing="12.0" style="-fx-background-color: #ffffff; -fx-border-color: #d7deea; -fx-border-width: 0 0 1 0;" BorderPane.alignment="CENTER">
+         <padding>
+            <Insets bottom="14.0" left="18.0" right="18.0" top="14.0" />
+         </padding>
+         <children>
+            <Button onAction="#handleBack" prefHeight="34.0" prefWidth="86.0" style="-fx-background-color: #6b7280; -fx-text-fill: white; -fx-font-weight: bold;" text="Back" />
+            <Label fx:id="groupNameLabel" text="Group: -" textFill="#1f2937">
+               <font>
+                  <Font name="System Bold" size="25.0" />
+               </font>
+            </Label>
+            <Pane HBox.hgrow="ALWAYS" />
+            <Label text="Student Group Dashboard" textFill="#64748b">
+               <font>
+                  <Font size="13.0" />
+               </font>
+            </Label>
+         </children>
+      </HBox>
+   </top>
+   <left>
+      <VBox prefWidth="220.0" spacing="8.0" style="-fx-background-color: #ffffff; -fx-border-color: #d7deea; -fx-border-width: 0 1 0 0;">
+         <padding>
+            <Insets bottom="16.0" left="12.0" right="12.0" top="16.0" />
+         </padding>
+         <children>
+            <Label text="Sections" textFill="#475569">
+               <font>
+                  <Font name="System Bold" size="13.0" />
+               </font>
+            </Label>
+            <Button fx:id="studentsMenuButton" maxWidth="1.7976931348623157E308" onAction="#handleShowStudents" prefHeight="34.0" style="-fx-background-color: #e2e8f0; -fx-text-fill: #0f172a; -fx-font-weight: bold;" text="Students" />
+            <Button fx:id="assignmentsMenuButton" maxWidth="1.7976931348623157E308" onAction="#handleShowAssignments" prefHeight="34.0" style="-fx-background-color: #f8fafc; -fx-text-fill: #0f172a;" text="Assignments" />
+            <Button fx:id="announcementsMenuButton" maxWidth="1.7976931348623157E308" onAction="#handleShowAnnouncements" prefHeight="34.0" style="-fx-background-color: #f8fafc; -fx-text-fill: #0f172a;" text="Announcements" />
+            <Button fx:id="discussionMenuButton" maxWidth="1.7976931348623157E308" onAction="#handleShowDiscussion" prefHeight="34.0" style="-fx-background-color: #f8fafc; -fx-text-fill: #0f172a;" text="Discussion" />
+            <Button fx:id="messagesMenuButton" maxWidth="1.7976931348623157E308" onAction="#handleShowMessages" prefHeight="34.0" style="-fx-background-color: #f8fafc; -fx-text-fill: #0f172a;" text="Messages" />
+            <Button fx:id="submissionsMenuButton" maxWidth="1.7976931348623157E308" onAction="#handleShowSubmissions" prefHeight="34.0" style="-fx-background-color: #f8fafc; -fx-text-fill: #0f172a;" text="Submissions" />
+         </children>
+      </VBox>
+   </left>
+   <center>
+      <StackPane fx:id="centerPane" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+         <BorderPane.margin>
+            <Insets bottom="14.0" left="14.0" right="14.0" top="14.0" />
+         </BorderPane.margin>
+      </StackPane>
+   </center>
+   <bottom>
+      <HBox style="-fx-background-color: #ffffff; -fx-border-color: #d7deea; -fx-border-width: 1 0 0 0;" BorderPane.alignment="CENTER_LEFT">
+         <padding>
+            <Insets bottom="10.0" left="16.0" right="16.0" top="10.0" />
+         </padding>
+         <children>
+            <Label fx:id="statusLabel" textFill="#2563eb">
+               <font>
+                  <Font size="12.0" />
+               </font>
+            </Label>
+         </children>
+      </HBox>
+   </bottom>
+</BorderPane>

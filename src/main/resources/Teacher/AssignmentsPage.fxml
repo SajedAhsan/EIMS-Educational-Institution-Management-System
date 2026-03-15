@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<HBox spacing="14.0" style="-fx-background-color: #ffffff; -fx-border-color: #d7deea; -fx-border-radius: 6; -fx-background-radius: 6;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1">
+   <padding>
+      <Insets bottom="14.0" left="14.0" right="14.0" top="14.0" />
+   </padding>
+   <children>
+      <VBox spacing="10.0" prefWidth="470.0" HBox.hgrow="ALWAYS">
+         <children>
+            <Label text="Assignments">
+               <font>
+                  <Font name="System Bold" size="18.0" />
+               </font>
+            </Label>
+            <Label text="Share a new assignment with this group" textFill="#64748b" />
+            <GridPane hgap="10.0" vgap="10.0">
+               <children>
+                  <Label text="Title" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                  <TextField fx:id="assetTitleField" promptText="Assignment title" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                  <Label text="Description" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                  <TextArea fx:id="assetDescriptionArea" prefHeight="80.0" promptText="Assignment details" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                  <Label text="File" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                  <HBox spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                     <children>
+                        <TextField fx:id="assetFilePathField" editable="false" promptText="Select file" HBox.hgrow="ALWAYS" />
+                        <Button onAction="#handleBrowseFile" style="-fx-background-color: #64748b; -fx-text-fill: white;" text="Browse" />
+                     </children>
+                  </HBox>
+
+                  <Label text="Type" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                  <TextField fx:id="assetTypeField" promptText="PDF, DOCX..." GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+                  <Label text="Deadline" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                  <HBox spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                     <children>
+                        <DatePicker fx:id="deadlineDatePicker" promptText="Date" />
+                        <TextField fx:id="deadlineTimeField" prefWidth="100.0" promptText="HH:mm" />
+                     </children>
+                  </HBox>
+               </children>
+               <columnConstraints>
+                  <javafx.scene.layout.ColumnConstraints prefWidth="88.0" />
+                  <javafx.scene.layout.ColumnConstraints hgrow="ALWAYS" />
+               </columnConstraints>
+            </GridPane>
+            <Button onAction="#handleAddAsset" prefHeight="34.0" prefWidth="180.0" style="-fx-background-color: #16a34a; -fx-text-fill: white; -fx-font-weight: bold;" text="Share Assignment" />
+         </children>
+      </VBox>
+      <VBox spacing="10.0" prefWidth="350.0" HBox.hgrow="ALWAYS">
+         <children>
+            <Label text="Shared Assignments">
+               <font>
+                  <Font name="System Bold" size="16.0" />
+               </font>
+            </Label>
+            <ListView fx:id="sharedAssetsList" onMouseClicked="#handleAssetSelection" prefHeight="510.0" />
+            <Button onAction="#handleRefreshAssets" prefHeight="32.0" prefWidth="100.0" style="-fx-background-color: #2563eb; -fx-text-fill: white;" text="Refresh" />
+         </children>
+      </VBox>
+   </children>
+</HBox>

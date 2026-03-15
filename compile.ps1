@@ -1,8 +1,16 @@
 # Compile EIMS Project with H2 Database
 Write-Host "Compiling EIMS Project..." -ForegroundColor Green
 
-# Compile Java files from Maven structure with subdirectories
-javac --module-path "javafx-sdk-24.0.2\lib" --add-modules javafx.controls,javafx.fxml -cp "lib\h2-2.2.224.jar;src\main\resources" -d bin src\main\java\*.java src\main\java\Student\*.java src\main\java\Teacher\*.java src\main\java\database\*.java
+# Compile all Java files recursively so nested packages are included
+$javaSources = Get-ChildItem -Path "src\main\java" -Filter "*.java" -Recurse |
+    ForEach-Object { $_.FullName }
+
+if (-not $javaSources -or $javaSources.Count -eq 0) {
+    Write-Host "No Java source files found under src\main\java." -ForegroundColor Red
+    exit 1
+}
+
+javac --module-path "javafx-sdk-24.0.2\lib" --add-modules javafx.controls,javafx.fxml -cp "lib\h2-2.2.224.jar;src\main\resources" -d bin $javaSources
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host "Compilation successful!" -ForegroundColor Green

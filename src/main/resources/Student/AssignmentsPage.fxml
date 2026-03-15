@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox spacing="10.0" style="-fx-background-color: #ffffff; -fx-border-color: #d7deea; -fx-border-radius: 6; -fx-background-radius: 6;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1">
+   <padding>
+      <Insets bottom="14.0" left="14.0" right="14.0" top="14.0" />
+   </padding>
+   <children>
+      <Label text="Assignments">
+         <font>
+            <Font name="System Bold" size="18.0" />
+         </font>
+      </Label>
+      <Label fx:id="assetsStatusLabel" text="No materials shared yet" textFill="#64748b" />
+      <ListView fx:id="assetsList" onMouseClicked="#handleAssetSelection" prefHeight="280.0" VBox.vgrow="ALWAYS" />
+      <Label fx:id="deadlineLabel" text="Deadline: -" textFill="#b91c1c" />
+      <Label fx:id="submissionStatusLabel" text="Not submitted yet" textFill="#166534" wrapText="true" />
+      <Label fx:id="gradeLabel" text="Grade: not yet evaluated" textFill="#7c3aed" />
+      <Label fx:id="feedbackLabel" textFill="#334155" wrapText="true" />
+      <HBox spacing="10.0">
+         <children>
+            <Button onAction="#handleDownload" prefHeight="34.0" prefWidth="120.0" style="-fx-background-color: #16a34a; -fx-text-fill: white; -fx-font-weight: bold;" text="Download" />
+            <Button onAction="#handleSubmitAssignment" prefHeight="34.0" prefWidth="150.0" style="-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-weight: bold;" text="Submit Assignment" />
+         </children>
+      </HBox>
+   </children>
+</VBox>
