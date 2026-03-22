@@ -1,18 +1,22 @@
 package progress;
 
+import database.DatabaseManager;
+import java.sql.SQLException;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.temporal.WeekFields;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.CopyOnWriteArrayList;
 import progress.model.Assignment;
 import progress.model.AttendanceRecord;
 import progress.model.Course;
@@ -20,10 +24,58 @@ import progress.model.Exam;
 import progress.model.Student;
 
 /**
- * In-memory progress tracker service shared by the student and teacher dashboards.
- * Attendance is tracked here during the current app session.
+ * Shared progress tracker service used by teacher and student dashboards.
+ *
+ * Data is sourced from the database (working days, attendance, submissions, exam results)
+ * so page reloads do not reset progress.
  */
 public class ProgressTrackerService {
+
+    public interface ProgressDataListener {
+        void onProgressDataChanged(ProgressDataEvent event);
+    }
+
+    public enum ProgressDataType {
+        ATTENDANCE,
+        ASSIGNMENT,
+        EXAM
+    }
+
+    public static class ProgressDataEvent {
+        private final ProgressDataType type;
+        private final int studentId;
+        private final int courseId;
+        private final LocalDateTime changedAt;
+
+        public ProgressDataEvent(ProgressDataType type, int studentId, int courseId) {
+            this.type = type;
+            this.studentId = studentId;
+            this.courseId = courseId;
+            this.changedAt = LocalDateTime.now();
+        }
+
+        public ProgressDataType getType() {
+            return type;
+        }
+
+        public int getStudentId() {
+            return studentId;
+        }
+
+        public int getCourseId() {
+            return courseId;
+        }
+
+        public LocalDateTime getChangedAt() {
+            return changedAt;
+        }
+
+        public boolean matches(int targetStudentId, int targetCourseId) {
+            boolean studentMatches = studentId <= 0 || targetStudentId <= 0 || studentId == targetStudentId;
+            boolean courseMatches = courseId <= 0 || targetCourseId <= 0 || courseId == targetCourseId;
+            return studentMatches && courseMatches;
+        }
+    }
 
     public static class CourseMetrics {
         private final Course course;
@@ -199,37 +251,50 @@ public class ProgressTrackerService {
     private static final double ASSIGNMENT_WEIGHT = 0.40;
     private static final double EXAM_WEIGHT = 0.40;
 
+    private final DatabaseManager dbManager = DatabaseManager.getInstance();
+
     private final Map<Integer, Student> studentsById = new LinkedHashMap<>();
     private final Map<Integer, Course> coursesById = new LinkedHashMap<>();
     private final Map<Integer, Set<Integer>> courseIdsByStudent = new HashMap<>();
-    private final Map<Integer, Set<LocalDate>> classDatesHeldByCourse = new HashMap<>();
-    private final Map<String, List<Assignment>> assignmentsByKey = new HashMap<>();
-    private final Map<String, List<Exam>> examsByKey = new HashMap<>();
-    private final Map<String, List<AttendanceRecord>> attendanceByKey = new HashMap<>();
-
-    private final AtomicInteger assignmentIdSeq = new AtomicInteger(1);
-    private final AtomicInteger examIdSeq = new AtomicInteger(1);
+    private final List<ProgressDataListener> listeners = new CopyOnWriteArrayList<>();
 
     private ProgressTrackerService() {
-        addCourseInternal(new Course(1001, "CSE101", "Programming Fundamentals"));
     }
 
     public static ProgressTrackerService getInstance() {
         return INSTANCE;
     }
 
+    public void addProgressDataListener(ProgressDataListener listener) {
+        if (listener != null) {
+            listeners.add(listener);
+        }
+    }
+
+    public void removeProgressDataListener(ProgressDataListener listener) {
+        listeners.remove(listener);
+    }
+
+    public void notifyAssignmentDataChanged(int studentId, int courseId) {
+        notifyDataChanged(ProgressDataType.ASSIGNMENT, studentId, courseId);
+    }
+
+    public void notifyExamDataChanged(int studentId, int courseId) {
+        notifyDataChanged(ProgressDataType.EXAM, studentId, courseId);
+    }
+
     public synchronized void ensureStudentExists(int studentId, String name, String email) {
-        if (studentsById.containsKey(studentId)) {
+        if (studentId <= 0 || studentsById.containsKey(studentId)) {
             return;
         }
         studentsById.put(studentId, new Student(studentId, name, email));
     }
 
     public synchronized void ensureCourseExists(int courseId, String code, String title) {
-        if (coursesById.containsKey(courseId)) {
+        if (courseId <= 0 || coursesById.containsKey(courseId)) {
             return;
         }
-        addCourseInternal(new Course(courseId, code, title));
+        coursesById.put(courseId, new Course(courseId, code, title));
     }
 
     public synchronized List<Course> getAllCourses() {
@@ -237,7 +302,10 @@ public class ProgressTrackerService {
     }
 
     public synchronized void enrollStudentInCourse(int studentId, int courseId) {
-        courseIdsByStudent.computeIfAbsent(studentId, id -> new LinkedHashSet<>()).add(courseId);
+        if (studentId <= 0 || courseId <= 0) {
+            return;
+        }
+        courseIdsByStudent.computeIfAbsent(studentId, k -> new LinkedHashSet<>()).add(courseId);
     }
 
     public synchronized void initializeMockDataForStudent(int studentId, String name, String email) {
@@ -245,14 +313,16 @@ public class ProgressTrackerService {
     }
 
     public synchronized void initializeMockDataForCourse(int studentId, int courseId) {
-        courseIdsByStudent.computeIfAbsent(studentId, id -> new LinkedHashSet<>()).add(courseId);
+        enrollStudentInCourse(studentId, courseId);
     }
 
     public synchronized List<Course> getCoursesForStudent(int studentId) {
+        syncCoursesFromDatabase(studentId);
+
         Set<Integer> courseIds = courseIdsByStudent.getOrDefault(studentId, Collections.emptySet());
         List<Course> courses = new ArrayList<>();
         for (Integer courseId : courseIds) {
-            Course c = coursesById.get(courseId);
+            Course c = resolveCourse(courseId);
             if (c != null) {
                 courses.add(c);
             }
@@ -262,24 +332,93 @@ public class ProgressTrackerService {
     }
 
     public synchronized List<Assignment> getAssignments(int studentId, int courseId) {
-        return new ArrayList<>(assignmentsByKey.getOrDefault(key(studentId, courseId), Collections.emptyList()));
+        List<Assignment> assignments = new ArrayList<>();
+        try {
+            List<DatabaseManager.AssetData> assets = dbManager.getGroupAssets(courseId);
+            Map<Integer, DatabaseManager.SubmissionData> submissionsByAssetId = new HashMap<>();
+            for (DatabaseManager.SubmissionData submission : dbManager.getSubmissionsByGroupAndStudent(courseId, studentId)) {
+                submissionsByAssetId.put(submission.getAssetId(), submission);
+            }
+
+            for (DatabaseManager.AssetData asset : assets) {
+                DatabaseManager.SubmissionData submission = submissionsByAssetId.get(asset.getId());
+                Double score = null;
+                String status = "Not Submitted";
+
+                if (submission != null) {
+                    if (submission.isEvaluated() && submission.getGrade() != null) {
+                        score = submission.getGrade().doubleValue();
+                        status = "Graded";
+                    } else {
+                        status = "Under Evaluation";
+                    }
+                }
+
+                assignments.add(new Assignment(
+                    asset.getId(),
+                    courseId,
+                    asset.getTitle(),
+                    100.0,
+                    score,
+                    status
+                ));
+            }
+        } catch (SQLException ignored) {
+            return Collections.emptyList();
+        }
+
+        assignments.sort(Comparator.comparing(Assignment::getTitle));
+        return assignments;
     }
 
     public synchronized List<Exam> getExams(int studentId, int courseId) {
-        return new ArrayList<>(examsByKey.getOrDefault(key(studentId, courseId), Collections.emptyList()));
+        List<Exam> exams = new ArrayList<>();
+        try {
+            List<DatabaseManager.ExamResultData> rows = dbManager.getExamResultsByGroupAndStudent(courseId, studentId);
+            for (DatabaseManager.ExamResultData row : rows) {
+                exams.add(new Exam(
+                    row.getId(),
+                    row.getGroupId(),
+                    row.getTitle(),
+                    row.getMaxScore(),
+                    row.getScore()
+                ));
+            }
+        } catch (SQLException ignored) {
+            return Collections.emptyList();
+        }
+
+        exams.sort(Comparator.comparing(Exam::getId));
+        return exams;
     }
 
     public synchronized List<AttendanceRecord> getAttendanceRecords(int studentId, int courseId) {
-        return new ArrayList<>(attendanceByKey.getOrDefault(key(studentId, courseId), Collections.emptyList()));
+        List<AttendanceRecord> records = new ArrayList<>();
+        try {
+            List<DatabaseManager.AttendanceRecordData> rows = dbManager.getAttendanceRecordsByGroupAndStudent(courseId, studentId);
+            for (DatabaseManager.AttendanceRecordData row : rows) {
+                records.add(new AttendanceRecord(
+                    row.getGroupId(),
+                    row.getStudentId(),
+                    row.getClassDate(),
+                    row.isPresent()
+                ));
+            }
+        } catch (SQLException ignored) {
+            return Collections.emptyList();
+        }
+
+        records.sort(Comparator.comparing(AttendanceRecord::getDate));
+        return records;
     }
 
+    // Legacy compatibility API.
     public synchronized void addAssignment(int studentId,
                                            int courseId,
                                            String title,
                                            double maxScore,
                                            Double score) {
-        List<Assignment> assignments = assignmentsByKey.computeIfAbsent(key(studentId, courseId), k -> new ArrayList<>());
-        assignments.add(new Assignment(assignmentIdSeq.getAndIncrement(), courseId, title, maxScore, score));
+        notifyDataChanged(ProgressDataType.ASSIGNMENT, studentId, courseId);
     }
 
     public synchronized void addExam(int studentId,
@@ -287,27 +426,86 @@ public class ProgressTrackerService {
                                      String title,
                                      double maxScore,
                                      Double score) {
-        List<Exam> exams = examsByKey.computeIfAbsent(key(studentId, courseId), k -> new ArrayList<>());
-        exams.add(new Exam(examIdSeq.getAndIncrement(), courseId, title, maxScore, score));
+        addExamResult(studentId, courseId, title, maxScore, score, LocalDate.now());
+    }
+
+    public synchronized void addExamResult(int studentId,
+                                           int courseId,
+                                           String title,
+                                           double maxScore,
+                                           Double score,
+                                           LocalDate examDate) {
+        try {
+            dbManager.addExamResult(courseId, studentId, title, score, maxScore, examDate);
+            notifyDataChanged(ProgressDataType.EXAM, studentId, courseId);
+        } catch (SQLException ignored) {
+            // Ignore write failures here; UI callers should surface DB errors where needed.
+        }
+    }
+
+    public synchronized boolean isWorkingDay(int courseId, LocalDate date) {
+        if (date == null || courseId <= 0) {
+            return false;
+        }
+        try {
+            return dbManager.isWorkingDay(courseId, date);
+        } catch (SQLException ignored) {
+            return false;
+        }
+    }
+
+    public synchronized void ensureWorkingDayWithDefaultPresent(int courseId,
+                                                                List<Integer> studentIds,
+                                                                LocalDate date) {
+        if (courseId <= 0 || date == null) {
+            return;
+        }
+
+        try {
+            boolean wasWorking = dbManager.isWorkingDay(courseId, date);
+            dbManager.ensureWorkingDayWithDefaultPresent(courseId, studentIds, date);
+            if (!wasWorking) {
+                notifyDataChanged(ProgressDataType.ATTENDANCE, -1, courseId);
+            }
+        } catch (SQLException ignored) {
+            // Ignore write failures here; UI callers should surface DB errors where needed.
+        }
     }
 
     public synchronized void markAttendance(int studentId,
                                             int courseId,
                                             LocalDate date,
                                             boolean present) {
-        classDatesHeldByCourse.computeIfAbsent(courseId, k -> new LinkedHashSet<>()).add(date);
-        List<AttendanceRecord> records = attendanceByKey.computeIfAbsent(key(studentId, courseId), k -> new ArrayList<>());
-        for (AttendanceRecord record : records) {
-            if (record.getDate().equals(date)) {
-                record.setPresent(present);
-                return;
-            }
+        if (studentId <= 0 || courseId <= 0 || date == null) {
+            return;
         }
-        records.add(new AttendanceRecord(courseId, studentId, date, present));
+
+        try {
+            dbManager.saveAttendanceRecord(courseId, studentId, date, present);
+            notifyDataChanged(ProgressDataType.ATTENDANCE, studentId, courseId);
+        } catch (SQLException ignored) {
+            // Ignore write failures here; UI callers should surface DB errors where needed.
+        }
+    }
+
+    public synchronized void markAttendanceForAll(int courseId,
+                                                  List<Integer> studentIds,
+                                                  LocalDate date,
+                                                  boolean present) {
+        if (courseId <= 0 || date == null || studentIds == null || studentIds.isEmpty()) {
+            return;
+        }
+
+        try {
+            dbManager.saveAttendanceForAll(courseId, studentIds, date, present);
+            notifyDataChanged(ProgressDataType.ATTENDANCE, -1, courseId);
+        } catch (SQLException ignored) {
+            // Ignore write failures here; UI callers should surface DB errors where needed.
+        }
     }
 
     public synchronized int getTotalClassDays(int courseId) {
-        return classDatesHeldByCourse.getOrDefault(courseId, Collections.emptySet()).size();
+        return getWorkingDaysAfterDate(courseId, null).size();
     }
 
     public synchronized boolean isPresentOnDate(int studentId, int courseId, LocalDate date) {
@@ -318,20 +516,22 @@ public class ProgressTrackerService {
                                                 int courseId,
                                                 LocalDate date,
                                                 LocalDate attendanceStartDate) {
-        if (date == null) {
+        if (date == null || courseId <= 0 || studentId <= 0) {
             return false;
         }
         if (attendanceStartDate != null && date.isBefore(attendanceStartDate)) {
             return false;
         }
-
-        List<AttendanceRecord> records = getAttendanceRecordsAfterDate(studentId, courseId, attendanceStartDate);
-        for (AttendanceRecord record : records) {
-            if (record.getDate().equals(date)) {
-                return record.isPresent();
-            }
+        if (!isWorkingDay(courseId, date)) {
+            return false;
         }
-        return false;
+
+        try {
+            String status = dbManager.getAttendanceStatus(courseId, studentId, date);
+            return "Present".equalsIgnoreCase(status);
+        } catch (SQLException ignored) {
+            return false;
+        }
     }
 
     public synchronized double getAttendancePercent(int studentId, int courseId) {
@@ -341,51 +541,39 @@ public class ProgressTrackerService {
     public synchronized double getAttendancePercent(int studentId,
                                                     int courseId,
                                                     LocalDate attendanceStartDate) {
-        List<AttendanceRecord> records = getAttendanceRecordsAfterDate(studentId, courseId, attendanceStartDate);
-        if (records.isEmpty()) {
+        List<LocalDate> workingDays = getWorkingDaysAfterDate(courseId, attendanceStartDate);
+        if (workingDays.isEmpty()) {
             return 0.0;
         }
 
-        int present = 0;
-        for (AttendanceRecord r : records) {
-            if (r.isPresent()) {
-                present++;
+        Set<LocalDate> workingDaySet = new HashSet<>(workingDays);
+        int presentCount = 0;
+        for (AttendanceRecord record : getAttendanceRecords(studentId, courseId)) {
+            LocalDate day = record.getDate();
+            if (record.isPresent()
+                && (attendanceStartDate == null || !day.isBefore(attendanceStartDate))
+                && workingDaySet.contains(day)) {
+                presentCount++;
             }
         }
-        return (present * 100.0) / records.size();
+
+        return (presentCount * 100.0) / workingDays.size();
     }
 
     public synchronized CourseMetrics getCourseMetrics(int studentId, int courseId) {
-        Course course = coursesById.get(courseId);
-        if (course == null) {
-            return new CourseMetrics(
-                new Course(courseId, "N/A", "Unknown Course"),
-                0,
-                0,
-                0.0,
-                Collections.emptyMap(),
-                Collections.emptyList(),
-                0,
-                0,
-                0.0,
-                Collections.emptyList(),
-                0,
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                0.0
-            );
-        }
+        Course course = resolveCourse(courseId);
 
-        List<AttendanceRecord> attendance = getAttendanceRecords(studentId, courseId);
+        List<LocalDate> workingDays = getWorkingDaysAfterDate(courseId, null);
+        Set<LocalDate> presentDays = getPresentDays(studentId, courseId, null);
+
         int present = 0;
-        for (AttendanceRecord r : attendance) {
-            if (r.isPresent()) {
+        for (LocalDate day : workingDays) {
+            if (presentDays.contains(day)) {
                 present++;
             }
         }
-        int totalClassDays = getTotalClassDays(courseId);
+
+        int totalClassDays = workingDays.size();
         int absent = Math.max(0, totalClassDays - present);
         double attendancePct = totalClassDays == 0 ? 0.0 : (present * 100.0) / totalClassDays;
 
@@ -394,7 +582,7 @@ public class ProgressTrackerService {
         double assignmentScoreSum = 0.0;
         int assignmentScoreCount = 0;
         for (Assignment assignment : assignments) {
-            if (assignment.isCompleted()) {
+            if (assignment.getScore() != null) {
                 completedAssignments++;
                 assignmentScoreSum += assignment.getScorePercent();
                 assignmentScoreCount++;
@@ -424,7 +612,7 @@ public class ProgressTrackerService {
             present,
             absent,
             attendancePct,
-            buildWeeklyAttendance(attendance),
+            buildWeeklyAttendance(workingDays, presentDays),
             assignments,
             completedAssignments,
             totalAssignments,
@@ -484,34 +672,42 @@ public class ProgressTrackerService {
     public synchronized Map<String, Double> getClassWeeklyAttendance(int courseId,
                                                                      List<Integer> studentIds,
                                                                      LocalDate attendanceStartDate) {
-        LinkedHashMap<String, Double> result = new LinkedHashMap<>();
-        result.put("Week-1", 0.0);
-        result.put("Week-2", 0.0);
-        result.put("Week-3", 0.0);
-        result.put("Week-4", 0.0);
-
+        LinkedHashMap<String, Double> result = emptyWeekMap();
         if (studentIds == null || studentIds.isEmpty()) {
             return result;
         }
 
-        Map<String, Integer> presentByWeek = new LinkedHashMap<>();
-        Map<String, Integer> totalByWeek = new LinkedHashMap<>();
-        for (String week : result.keySet()) {
-            presentByWeek.put(week, 0);
-            totalByWeek.put(week, 0);
+        List<LocalDate> workingDays = getWorkingDaysAfterDate(courseId, attendanceStartDate);
+        if (workingDays.isEmpty()) {
+            return result;
         }
 
+        Map<String, Integer> presentByWeek = emptyWeekCounter();
+        Map<String, Integer> totalByWeek = emptyWeekCounter();
+        LocalDate today = LocalDate.now();
+
+        Map<Integer, Set<LocalDate>> presentDaysByStudent = new HashMap<>();
         for (Integer studentId : studentIds) {
-            List<AttendanceRecord> records = getAttendanceRecordsAfterDate(studentId, courseId, attendanceStartDate);
-            Map<String, Double> single = buildWeeklyAttendance(records);
-            for (Map.Entry<String, Double> entry : single.entrySet()) {
-                String week = entry.getKey();
-                if (presentByWeek.containsKey(week)) {
-                    double pct = entry.getValue();
-                    if (pct > 0) {
-                        presentByWeek.put(week, presentByWeek.get(week) + (int) Math.round(pct));
-                        totalByWeek.put(week, totalByWeek.get(week) + 100);
-                    }
+            if (studentId == null || studentId <= 0) {
+                continue;
+            }
+            presentDaysByStudent.put(studentId, getPresentDays(studentId, courseId, attendanceStartDate));
+        }
+
+        for (LocalDate workingDay : workingDays) {
+            String bucket = toWeekBucket(workingDay, today);
+            if (bucket == null) {
+                continue;
+            }
+
+            for (Integer studentId : studentIds) {
+                if (studentId == null || studentId <= 0) {
+                    continue;
+                }
+                totalByWeek.put(bucket, totalByWeek.get(bucket) + 1);
+                Set<LocalDate> presentDays = presentDaysByStudent.get(studentId);
+                if (presentDays != null && presentDays.contains(workingDay)) {
+                    presentByWeek.put(bucket, presentByWeek.get(bucket) + 1);
                 }
             }
         }
@@ -541,16 +737,20 @@ public class ProgressTrackerService {
         if (attendanceStartDate != null && date.isBefore(attendanceStartDate)) {
             return new ClassAttendanceSummary(0, 0);
         }
-
         if (studentIds == null || studentIds.isEmpty()) {
+            return new ClassAttendanceSummary(0, 0);
+        }
+        if (!isWorkingDay(courseId, date)) {
             return new ClassAttendanceSummary(0, 0);
         }
 
         int present = 0;
         int absent = 0;
         for (Integer studentId : studentIds) {
-            boolean isPresent = isPresentOnDate(studentId, courseId, date, attendanceStartDate);
-            if (isPresent) {
+            if (studentId == null || studentId <= 0) {
+                continue;
+            }
+            if (isPresentOnDate(studentId, courseId, date, attendanceStartDate)) {
                 present++;
             } else {
                 absent++;
@@ -559,75 +759,145 @@ public class ProgressTrackerService {
         return new ClassAttendanceSummary(present, absent);
     }
 
-    private void addCourseInternal(Course course) {
-        coursesById.put(course.getId(), course);
-    }
-
-    private static String key(int studentId, int courseId) {
-        return studentId + ":" + courseId;
-    }
-
-    private List<AttendanceRecord> getAttendanceRecordsAfterDate(int studentId,
-                                                                 int courseId,
-                                                                 LocalDate attendanceStartDate) {
-        List<AttendanceRecord> records =
-            attendanceByKey.getOrDefault(key(studentId, courseId), Collections.emptyList());
-
-        if (attendanceStartDate == null) {
-            return new ArrayList<>(records);
+    private void syncCoursesFromDatabase(int studentId) {
+        if (studentId <= 0) {
+            return;
         }
 
-        List<AttendanceRecord> filtered = new ArrayList<>();
-        for (AttendanceRecord record : records) {
-            if (!record.getDate().isBefore(attendanceStartDate)) {
-                filtered.add(record);
+        try {
+            List<DatabaseManager.GroupData> groups = dbManager.getGroupsByStudent(studentId);
+            for (DatabaseManager.GroupData group : groups) {
+                if (group == null) {
+                    continue;
+                }
+                ensureCourseExists(group.getId(), "GRP-" + group.getId(), group.getName());
+                enrollStudentInCourse(studentId, group.getId());
+            }
+        } catch (SQLException ignored) {
+            // Best effort sync.
+        }
+    }
+
+    private Course resolveCourse(int courseId) {
+        Course existing = coursesById.get(courseId);
+        if (existing != null) {
+            return existing;
+        }
+
+        try {
+            DatabaseManager.GroupDetailData group = dbManager.getGroupById(courseId);
+            if (group != null) {
+                Course resolved = new Course(courseId, "GRP-" + courseId, group.getName());
+                coursesById.put(courseId, resolved);
+                return resolved;
+            }
+        } catch (SQLException ignored) {
+            // Fall back to generic title.
+        }
+
+        Course fallback = new Course(courseId, "GRP-" + courseId, "Group " + courseId);
+        coursesById.put(courseId, fallback);
+        return fallback;
+    }
+
+    private List<LocalDate> getWorkingDaysAfterDate(int courseId, LocalDate attendanceStartDate) {
+        try {
+            List<LocalDate> days = dbManager.getWorkingDays(courseId);
+            if (attendanceStartDate == null) {
+                return days;
+            }
+
+            List<LocalDate> filtered = new ArrayList<>();
+            for (LocalDate day : days) {
+                if (!day.isBefore(attendanceStartDate)) {
+                    filtered.add(day);
+                }
+            }
+            return filtered;
+        } catch (SQLException ignored) {
+            return Collections.emptyList();
+        }
+    }
+
+    private Set<LocalDate> getPresentDays(int studentId, int courseId, LocalDate attendanceStartDate) {
+        Set<LocalDate> presentDays = new HashSet<>();
+        for (AttendanceRecord record : getAttendanceRecords(studentId, courseId)) {
+            LocalDate date = record.getDate();
+            if (record.isPresent() && (attendanceStartDate == null || !date.isBefore(attendanceStartDate))) {
+                presentDays.add(date);
             }
         }
-        return filtered;
+        return presentDays;
     }
 
-    private static Map<String, Double> buildWeeklyAttendance(List<AttendanceRecord> records) {
+    private static LinkedHashMap<String, Double> emptyWeekMap() {
         LinkedHashMap<String, Double> result = new LinkedHashMap<>();
         result.put("Week-1", 0.0);
         result.put("Week-2", 0.0);
         result.put("Week-3", 0.0);
         result.put("Week-4", 0.0);
+        return result;
+    }
 
-        if (records == null || records.isEmpty()) {
+    private static LinkedHashMap<String, Integer> emptyWeekCounter() {
+        LinkedHashMap<String, Integer> result = new LinkedHashMap<>();
+        result.put("Week-1", 0);
+        result.put("Week-2", 0);
+        result.put("Week-3", 0);
+        result.put("Week-4", 0);
+        return result;
+    }
+
+    private static Map<String, Double> buildWeeklyAttendance(List<LocalDate> workingDays,
+                                                              Set<LocalDate> presentDays) {
+        LinkedHashMap<String, Double> result = emptyWeekMap();
+        if (workingDays == null || workingDays.isEmpty()) {
             return result;
         }
 
-        Map<String, Integer> presentByWeek = new HashMap<>();
-        Map<String, Integer> totalByWeek = new HashMap<>();
-        for (String w : result.keySet()) {
-            presentByWeek.put(w, 0);
-            totalByWeek.put(w, 0);
-        }
-
+        Map<String, Integer> presentByWeek = emptyWeekCounter();
+        Map<String, Integer> totalByWeek = emptyWeekCounter();
         LocalDate today = LocalDate.now();
-        WeekFields wf = WeekFields.of(Locale.getDefault());
-        int thisWeek = today.get(wf.weekOfWeekBasedYear());
 
-        for (AttendanceRecord record : records) {
-            int week = record.getDate().get(wf.weekOfWeekBasedYear());
-            int diff = thisWeek - week;
-            if (diff < 0 || diff > 3) {
+        for (LocalDate workingDay : workingDays) {
+            String bucket = toWeekBucket(workingDay, today);
+            if (bucket == null) {
                 continue;
             }
 
-            String label = "Week-" + (4 - diff);
-            totalByWeek.put(label, totalByWeek.get(label) + 1);
-            if (record.isPresent()) {
-                presentByWeek.put(label, presentByWeek.get(label) + 1);
+            totalByWeek.put(bucket, totalByWeek.get(bucket) + 1);
+            if (presentDays != null && presentDays.contains(workingDay)) {
+                presentByWeek.put(bucket, presentByWeek.get(bucket) + 1);
             }
         }
 
-        for (String w : result.keySet()) {
-            int total = totalByWeek.get(w);
-            int present = presentByWeek.get(w);
-            result.put(w, total == 0 ? 0.0 : (present * 100.0) / total);
+        for (String week : result.keySet()) {
+            int present = presentByWeek.get(week);
+            int total = totalByWeek.get(week);
+            result.put(week, total == 0 ? 0.0 : (present * 100.0) / total);
         }
 
         return result;
+    }
+
+    private static String toWeekBucket(LocalDate date, LocalDate today) {
+        LocalDate startOfDateWeek = date.with(DayOfWeek.MONDAY);
+        LocalDate startOfCurrentWeek = today.with(DayOfWeek.MONDAY);
+        long weekDiff = ChronoUnit.WEEKS.between(startOfDateWeek, startOfCurrentWeek);
+        if (weekDiff < 0 || weekDiff > 3) {
+            return null;
+        }
+        return "Week-" + (4 - weekDiff);
+    }
+
+    private void notifyDataChanged(ProgressDataType type, int studentId, int courseId) {
+        ProgressDataEvent event = new ProgressDataEvent(type, studentId, courseId);
+        for (ProgressDataListener listener : listeners) {
+            try {
+                listener.onProgressDataChanged(event);
+            } catch (RuntimeException ignored) {
+                // Do not block the rest of listeners.
+            }
+        }
     }
 }

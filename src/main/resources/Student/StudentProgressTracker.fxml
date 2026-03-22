@@ -65,6 +65,7 @@
                          textFill="#0f172a">
                      <font><Font name="System Bold" size="18.0" /></font>
                   </Label>
+
                   <Separator />
 
                   <!-- ── Attendance card ─────────────────────────────────── -->
@@ -78,17 +79,30 @@
 
                         <!-- shown when teacher has not yet marked any attendance -->
                         <Label fx:id="noAttendanceLabel"
-                               text="No attendance recorded yet. Attendance is marked by the teacher; absent by default."
+                              text="No classes conducted yet."
                                textFill="#94a3b8" wrapText="true" />
 
                         <!-- shown once attendance exists -->
                         <Label fx:id="attendanceDetailsLabel" textFill="#475569" wrapText="true" />
+                           <Label fx:id="attendanceWarningLabel" text="Warning: Attendance below 80%"
+                              textFill="#dc2626" style="-fx-font-weight: bold;" wrapText="true" />
 
                         <!-- Pie chart: green = present, red = absent (colours applied in code) -->
-                        <HBox alignment="CENTER">
+                        <HBox alignment="CENTER_LEFT" spacing="16.0">
                            <children>
-                              <PieChart fx:id="attendancePieChart" legendSide="RIGHT"
+                              <PieChart fx:id="attendancePieChart" legendVisible="false"
                                         prefHeight="250.0" prefWidth="460.0" />
+                              <VBox spacing="8.0"
+                                    style="-fx-background-color: #f8fafc; -fx-border-color: #d7deea; -fx-border-radius: 8; -fx-background-radius: 8;">
+                                 <padding><Insets bottom="10.0" left="10.0" right="10.0" top="10.0" /></padding>
+                                 <children>
+                                    <Label text="Legend" textFill="#1f2937">
+                                       <font><Font name="System Bold" size="13.0" /></font>
+                                    </Label>
+                                    <Label text="🟢 Green = Present %" textFill="#166534" />
+                                    <Label text="🔴 Red = Absent %" textFill="#991b1b" />
+                                 </children>
+                              </VBox>
                            </children>
                         </HBox>
                      </children>
@@ -104,24 +118,41 @@
                         </Label>
 
                         <Label fx:id="noAssignmentsLabel"
-                               text="No assignments recorded so far."
+                              text="No assignments given so far"
                                textFill="#94a3b8" />
 
                         <Label fx:id="assignmentsSummaryLabel" textFill="#475569" wrapText="true" />
 
                         <TableView fx:id="assignmentsTable" prefHeight="160.0">
                            <columns>
-                              <TableColumn fx:id="colAssignmentTitle"  prefWidth="220.0" text="Assignment" />
-                              <TableColumn fx:id="colAssignmentScore"  prefWidth="80.0"  text="Score" />
-                              <TableColumn fx:id="colAssignmentMaxScore" prefWidth="90.0" text="Max Score" />
-                              <TableColumn fx:id="colAssignmentStatus" prefWidth="120.0" text="Status" />
+                              <TableColumn fx:id="colAssignmentTitle"  prefWidth="250.0" text="Assignment Name" />
+                              <TableColumn fx:id="colAssignmentStatus" prefWidth="170.0" text="Status" />
+                              <TableColumn fx:id="colAssignmentScore"  prefWidth="110.0" text="Score" />
                            </columns>
                         </TableView>
 
                         <BarChart fx:id="assignmentScoreBarChart" prefHeight="210.0" animated="true">
-                           <xAxis><CategoryAxis label="Assignment" /></xAxis>
-                           <yAxis><NumberAxis label="Score %" lowerBound="0.0" upperBound="100.0" tickUnit="10.0" /></yAxis>
+                           <xAxis><CategoryAxis label="Assignments" /></xAxis>
+                           <yAxis><NumberAxis label="Score (0–100)" lowerBound="0.0" upperBound="100.0" tickUnit="10.0" /></yAxis>
                         </BarChart>
+
+                        <Label fx:id="assignmentAverageLabel" text="Average Score: --" textFill="#1f2937">
+                           <font><Font name="System Bold" size="13.0" /></font>
+                        </Label>
+
+                        <VBox fx:id="assignmentColorLegendBox" spacing="5.0"
+                              style="-fx-background-color: #f8fafc; -fx-border-color: #d7deea; -fx-border-radius: 8; -fx-background-radius: 8;">
+                           <padding><Insets bottom="8.0" left="10.0" right="10.0" top="8.0" /></padding>
+                           <children>
+                              <Label text="Legend" textFill="#1f2937">
+                                 <font><Font name="System Bold" size="12.0" /></font>
+                              </Label>
+                              <Label text="🔴 Red: Below 40" textFill="#991b1b" />
+                              <Label text="🟡 Yellow: 40–60" textFill="#854d0e" />
+                              <Label text="🟢 Green: 60–80" textFill="#166534" />
+                              <Label text="🟣 Purple: Above 80" textFill="#7e22ce" />
+                           </children>
+                        </VBox>
                      </children>
                   </VBox>
 
@@ -149,8 +180,8 @@
                         </TableView>
 
                         <BarChart fx:id="examScoreBarChart" prefHeight="210.0" animated="true">
-                           <xAxis><CategoryAxis label="Exam" /></xAxis>
-                           <yAxis><NumberAxis label="Score %" lowerBound="0.0" upperBound="100.0" tickUnit="10.0" /></yAxis>
+                           <xAxis><CategoryAxis label="Exams" /></xAxis>
+                           <yAxis><NumberAxis label="Score (0-100)" lowerBound="0.0" upperBound="100.0" tickUnit="10.0" /></yAxis>
                         </BarChart>
                      </children>
                   </VBox>

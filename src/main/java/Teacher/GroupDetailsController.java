@@ -31,6 +31,8 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.chart.BarChart;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -38,12 +40,14 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.DateCell;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
@@ -51,7 +55,6 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.Tooltip;
-import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
@@ -60,7 +63,6 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import progress.ProgressTrackerService;
-import progress.model.AttendanceRecord;
 import progress.model.Course;
 import util.forum.Announcement;
 import util.forum.CourseCommunicationService;
@@ -85,6 +87,11 @@ public class GroupDetailsController {
     private static final String MENU_NORMAL_STYLE =
         "-fx-background-color: #f8fafc; -fx-text-fill: #0f172a;";
     private static final double ATTENDANCE_RISK_THRESHOLD = 75.0;
+    private static final String NON_WORKING_DAY_STATUS = "Not a working day";
+    private static final String[] SCORE_RANGE_BUCKETS = {
+        "0-10", "11-20", "21-30", "31-40", "41-50",
+        "51-60", "61-70", "71-80", "81-90", "91-100"
+    };
 
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
     private static final DateTimeFormatter DT_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
@@ -126,6 +133,10 @@ public class GroupDetailsController {
     @FXML private TableColumn<DatabaseManager.SubmissionData, String> colGrade;
     @FXML private Label statsLabel;
     @FXML private ComboBox<String> submissionsFilterCombo;
+    @FXML private ComboBox<DatabaseManager.AssetData> performanceAssignmentCombo;
+    @FXML private Label performanceAssignmentHintLabel;
+    @FXML private Label performanceStatsLabel;
+    @FXML private BarChart<String, Number> performanceDistributionBarChart;
 
     // Announcements page
     @FXML private ListView<Announcement> announcementsListView;
@@ -151,8 +162,6 @@ public class GroupDetailsController {
     @FXML private TableView<AttendanceRow> attendanceTable;
     @FXML private TableColumn<AttendanceRow, String> colAttendanceStudent;
     @FXML private TableColumn<AttendanceRow, String> colAttendanceStatus;
-    @FXML private TableColumn<AttendanceRow, String> colAttendancePercent;
-    @FXML private TableColumn<AttendanceRow, String> colAttendanceRisk;
     @FXML private Label attendanceSummaryLabel;
     @FXML private BarChart<String, Number> attendanceOverviewBarChart;
 
@@ -600,8 +609,16 @@ public class GroupDetailsController {
     }
 
     private void configureSubmissionsPage() {
+        if (memberDataList.isEmpty()) {
+            loadMembers();
+        }
+        if (assetDataList.isEmpty()) {
+            loadAssets();
+        }
+
         configureSubmissionsTable();
         configureSubmissionsFilter();
+        configurePerformanceAnalyticsSection();
         loadSubmissionsForGroup();
     }
 
@@ -610,9 +627,7 @@ public class GroupDetailsController {
             || attendanceDatePicker == null
             || attendanceTable == null
             || colAttendanceStudent == null
-            || colAttendanceStatus == null
-            || colAttendancePercent == null
-            || colAttendanceRisk == null) {
+            || colAttendanceStatus == null) {
             return;
         }
 
@@ -620,19 +635,96 @@ public class GroupDetailsController {
             loadMembers();
         }
 
-        attendanceTable.setEditable(true);
+        attendanceTable.setEditable(false);
         attendanceTable.setItems(attendanceRows);
 
         colAttendanceStudent.setCellValueFactory(c ->
             new SimpleStringProperty(c.getValue().getStudentName()));
         colAttendanceStatus.setCellValueFactory(c ->
             new SimpleStringProperty(c.getValue().getStatus()));
-        colAttendancePercent.setCellValueFactory(c ->
-            new SimpleStringProperty(String.format("%.1f%%", c.getValue().getAttendancePercent())));
-        colAttendanceRisk.setCellValueFactory(c ->
-            new SimpleStringProperty(isAtRisk(c.getValue().getAttendancePercent()) ? "At Risk" : "On Track"));
 
-        colAttendanceStatus.setCellFactory(ComboBoxTableCell.forTableColumn("Present", "Absent"));
+        colAttendanceStatus.setEditable(true);
+        colAttendanceStatus.setCellFactory(column -> new TableCell<AttendanceRow, String>() {
+            private final ComboBox<String> statusCombo =
+                new ComboBox<>(FXCollections.observableArrayList("Present", "Absent"));
+
+            {
+                statusCombo.setMaxWidth(Double.MAX_VALUE);
+                statusCombo.setOnAction(evt -> {
+                    if (!isEditing()) {
+                        return;
+                    }
+                    String selectedStatus = statusCombo.getValue();
+                    if (selectedStatus != null) {
+                        commitEdit(selectedStatus);
+                    }
+                });
+            }
+
+            @Override
+            public void startEdit() {
+                if (isEmpty()) {
+                    return;
+                }
+
+                LocalDate selectedDate = normalizeAttendanceDate(
+                    attendanceDatePicker != null ? attendanceDatePicker.getValue() : null
+                );
+                if (selectedAttendanceCourseId <= 0
+                    || !isAttendanceDateValidForGroup(selectedDate)
+                    || !progressTrackerService.isWorkingDay(selectedAttendanceCourseId, selectedDate)) {
+                    return;
+                }
+
+                super.startEdit();
+                statusCombo.setValue(getItem());
+                setText(null);
+                setGraphic(statusCombo);
+                setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+                statusCombo.show();
+            }
+
+            @Override
+            public void cancelEdit() {
+                super.cancelEdit();
+                setText(getItem());
+                setGraphic(null);
+                setContentDisplay(ContentDisplay.TEXT_ONLY);
+            }
+
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setGraphic(null);
+                    setStyle("");
+                    return;
+                }
+
+                if (isEditing()) {
+                    statusCombo.setValue(item);
+                    setText(null);
+                    setGraphic(statusCombo);
+                    setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+                } else {
+                    setText(item);
+                    setGraphic(null);
+                    setContentDisplay(ContentDisplay.TEXT_ONLY);
+                }
+
+                if ("Present".equalsIgnoreCase(item)) {
+                    setStyle("-fx-background-color: #dcfce7; -fx-text-fill: #166534; -fx-font-weight: bold;");
+                } else if ("Absent".equalsIgnoreCase(item)) {
+                    setStyle("-fx-background-color: #fee2e2; -fx-text-fill: #991b1b; -fx-font-weight: bold;");
+                } else if (NON_WORKING_DAY_STATUS.equalsIgnoreCase(item)) {
+                    setStyle("-fx-background-color: #f1f5f9; -fx-text-fill: #64748b; -fx-font-style: italic;");
+                } else {
+                    setStyle("-fx-background-color: #f8fafc; -fx-text-fill: #475569;");
+                }
+            }
+        });
+
         colAttendanceStatus.setOnEditCommit(event -> {
             AttendanceRow row = event.getRowValue();
             String newValue = event.getNewValue();
@@ -652,6 +744,13 @@ public class GroupDetailsController {
                 attendanceDatePicker.setValue(selectedDate);
             }
 
+            if (!progressTrackerService.isWorkingDay(selectedAttendanceCourseId, selectedDate)) {
+                showAlert(AlertType.WARNING, "Non-working Day",
+                    "This date is not a working day. Click \"Mark All Present\" first.");
+                refreshAttendanceTableAndCharts();
+                return;
+            }
+
             boolean present = "Present".equalsIgnoreCase(newValue);
 
             progressTrackerService.markAttendance(
@@ -662,19 +761,18 @@ public class GroupDetailsController {
             );
 
             refreshAttendanceTableAndCharts();
+
+            if (statusLabel != null) {
+                statusLabel.setText("Updated " + row.getStudentName() + " as " + (present ? "Present" : "Absent")
+                    + " for " + selectedDate + ".");
+            }
         });
 
         attendanceTable.setRowFactory(tv -> new TableRow<AttendanceRow>() {
             @Override
             protected void updateItem(AttendanceRow item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setStyle("");
-                } else if (isAtRisk(item.getAttendancePercent())) {
-                    setStyle("-fx-background-color: #fff1f2;");
-                } else {
-                    setStyle("");
-                }
+                setStyle("");
             }
         });
 
@@ -755,10 +853,15 @@ public class GroupDetailsController {
             attendanceDatePicker.setValue(selectedDate);
         }
 
+        boolean isWorkingDay = progressTrackerService.isWorkingDay(selectedAttendanceCourseId, selectedDate);
+        attendanceTable.setEditable(isWorkingDay);
+
         attendanceRows.clear();
         for (DatabaseManager.MemberData member : memberDataList) {
             int studentId = member.getId();
-            String status = getAttendanceStatusForDate(studentId, selectedAttendanceCourseId, selectedDate);
+            String status = isWorkingDay
+                ? getAttendanceStatusForDate(studentId, selectedAttendanceCourseId, selectedDate)
+                : NON_WORKING_DAY_STATUS;
             double percent = progressTrackerService.getAttendancePercent(
                 studentId,
                 selectedAttendanceCourseId,
@@ -815,17 +918,25 @@ public class GroupDetailsController {
             return "N/A";
         }
 
-        List<AttendanceRecord> records = progressTrackerService.getAttendanceRecords(studentId, courseId);
-        for (AttendanceRecord record : records) {
-            if (!record.getDate().isBefore(getAttendanceTrackingStartDate()) && record.getDate().equals(date)) {
-                return record.isPresent() ? "Present" : "Absent";
-            }
+        if (!progressTrackerService.isWorkingDay(courseId, date)) {
+            return NON_WORKING_DAY_STATUS;
         }
-        return "Absent";
+
+        return progressTrackerService.isPresentOnDate(studentId, courseId, date, getAttendanceTrackingStartDate())
+            ? "Present"
+            : "Absent";
     }
 
     private void updateAttendanceSummary(int courseId, LocalDate date) {
         if (attendanceSummaryLabel == null) {
+            return;
+        }
+
+        if (!progressTrackerService.isWorkingDay(courseId, date)) {
+            attendanceSummaryLabel.setText(
+                "This is not a working day. Mark all Present to start this as a working day. "
+                    + "Then you can update attendance individually."
+            );
             return;
         }
 
@@ -844,15 +955,14 @@ public class GroupDetailsController {
         double presentPct = total == 0 ? 0.0 : (present * 100.0) / total;
 
         attendanceSummaryLabel.setText(String.format(
-            "Date %s: %d present, %d absent (%.1f%% present). At-risk threshold: %.0f%%",
+            "Date %s: %d present, %d absent (%.1f%% present).",
             date,
             present,
             absent,
-            presentPct,
-            ATTENDANCE_RISK_THRESHOLD
+            presentPct
         ));
         attendanceSummaryLabel.setText(attendanceSummaryLabel.getText() +
-            " | Tracking start: " + getAttendanceTrackingStartDate());
+            " Tracking start: " + getAttendanceTrackingStartDate());
     }
 
     private void updateAttendanceOverviewChart(int courseId) {
@@ -909,7 +1019,15 @@ public class GroupDetailsController {
             }
             showAlert(AlertType.WARNING, "Invalid Date",
                 "Attendance can only be marked between " + getAttendanceTrackingStartDate() + " and today " + LocalDate.now() + ".");
+            selectedDate = clamped;
         }
+
+        if (selectedDate != null && selectedAttendanceCourseId > 0
+            && !progressTrackerService.isWorkingDay(selectedAttendanceCourseId, selectedDate)
+            && statusLabel != null) {
+            statusLabel.setText("This is not a working day. Click Mark All Present to activate it.");
+        }
+
         refreshAttendanceTableAndCharts();
     }
 
@@ -944,13 +1062,38 @@ public class GroupDetailsController {
             attendanceDatePicker.setValue(selectedDate);
         }
 
-        for (DatabaseManager.MemberData member : memberDataList) {
-            progressTrackerService.markAttendance(member.getId(), selectedAttendanceCourseId, selectedDate, present);
+        boolean isWorkingDay = progressTrackerService.isWorkingDay(selectedAttendanceCourseId, selectedDate);
+        if (!isWorkingDay && !present) {
+            showAlert(AlertType.WARNING, "Non-working Day",
+                "This date is not a working day. Click \"Mark All Present\" first.");
+            refreshAttendanceTableAndCharts();
+            return;
         }
+
+        boolean activatedWorkingDay = false;
+        if (!isWorkingDay && present) {
+            progressTrackerService.ensureWorkingDayWithDefaultPresent(
+                selectedAttendanceCourseId,
+                getAttendanceStudentIds(),
+                selectedDate
+            );
+            activatedWorkingDay = true;
+        }
+
+        progressTrackerService.markAttendanceForAll(
+            selectedAttendanceCourseId,
+            getAttendanceStudentIds(),
+            selectedDate,
+            present
+        );
 
         refreshAttendanceTableAndCharts();
         if (statusLabel != null) {
-            statusLabel.setText((present ? "Marked all present" : "Marked all absent") + " for " + selectedDate + ".");
+            if (present && activatedWorkingDay) {
+                statusLabel.setText("Marked " + selectedDate + " as Working Day and set all students Present.");
+            } else {
+                statusLabel.setText((present ? "Marked all present" : "Marked all absent") + " for " + selectedDate + ".");
+            }
         }
     }
 
@@ -1113,6 +1256,8 @@ public class GroupDetailsController {
 
             applySubmissionFilter();
             updateSubmissionStats(allGroupSubmissions);
+            populatePerformanceAssignmentOptions();
+            refreshPerformanceDistributionChart();
 
             if (statusLabel != null) {
                 statusLabel.setText("Loaded " + allGroupSubmissions.size() + " submission(s) from all assignments.");
@@ -1136,6 +1281,179 @@ public class GroupDetailsController {
         }
 
         submissionsObs.setAll(filtered);
+    }
+
+    private void configurePerformanceAnalyticsSection() {
+        if (performanceAssignmentCombo == null || performanceDistributionBarChart == null) {
+            return;
+        }
+
+        performanceAssignmentCombo.setCellFactory(list -> new ListCell<>() {
+            @Override
+            protected void updateItem(DatabaseManager.AssetData item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : formatAssetForAnalytics(item));
+            }
+        });
+        performanceAssignmentCombo.setButtonCell(new ListCell<>() {
+            @Override
+            protected void updateItem(DatabaseManager.AssetData item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : formatAssetForAnalytics(item));
+            }
+        });
+        performanceAssignmentCombo.setOnAction(e -> refreshPerformanceDistributionChart());
+
+        if (performanceDistributionBarChart.getXAxis() instanceof CategoryAxis) {
+            CategoryAxis xAxis = (CategoryAxis) performanceDistributionBarChart.getXAxis();
+            xAxis.setLabel("Score Range");
+        }
+        if (performanceDistributionBarChart.getYAxis() instanceof NumberAxis) {
+            NumberAxis yAxis = (NumberAxis) performanceDistributionBarChart.getYAxis();
+            yAxis.setLabel("Number of Students");
+            yAxis.setForceZeroInRange(true);
+            yAxis.setAutoRanging(true);
+        }
+
+        performanceDistributionBarChart.setAnimated(false);
+        performanceDistributionBarChart.setLegendVisible(false);
+    }
+
+    private String formatAssetForAnalytics(DatabaseManager.AssetData asset) {
+        if (asset == null) {
+            return "";
+        }
+
+        if (asset.getDeadline() == null) {
+            return asset.getTitle() + " (No deadline)";
+        }
+
+        return asset.getTitle() + " (Due: " + asset.getDeadline().format(DT_FMT) + ")";
+    }
+
+    private void populatePerformanceAssignmentOptions() {
+        if (performanceAssignmentCombo == null) {
+            return;
+        }
+
+        Integer previousId = performanceAssignmentCombo.getValue() != null
+            ? performanceAssignmentCombo.getValue().getId()
+            : null;
+
+        LocalDateTime now = LocalDateTime.now();
+        List<DatabaseManager.AssetData> endedAssignments = new ArrayList<>();
+        for (DatabaseManager.AssetData asset : assetDataList) {
+            LocalDateTime deadline = asset.getDeadline();
+            if (deadline != null && !deadline.isAfter(now)) {
+                endedAssignments.add(asset);
+            }
+        }
+
+        endedAssignments.sort((a, b) -> b.getDeadline().compareTo(a.getDeadline()));
+        performanceAssignmentCombo.setItems(FXCollections.observableArrayList(endedAssignments));
+
+        if (endedAssignments.isEmpty()) {
+            performanceAssignmentCombo.getSelectionModel().clearSelection();
+            if (performanceDistributionBarChart != null) {
+                performanceDistributionBarChart.getData().clear();
+            }
+            if (performanceAssignmentHintLabel != null) {
+                performanceAssignmentHintLabel.setText(
+                    "No assignments with passed deadlines yet. Distribution appears after a deadline is over."
+                );
+            }
+            if (performanceStatsLabel != null) {
+                performanceStatsLabel.setText("Total Submissions: 0    Not Submitted: 0");
+            }
+            return;
+        }
+
+        DatabaseManager.AssetData selected = null;
+        if (previousId != null) {
+            for (DatabaseManager.AssetData asset : endedAssignments) {
+                if (asset.getId() == previousId) {
+                    selected = asset;
+                    break;
+                }
+            }
+        }
+
+        if (selected == null) {
+            selected = endedAssignments.get(0);
+        }
+        performanceAssignmentCombo.getSelectionModel().select(selected);
+    }
+
+    private void refreshPerformanceDistributionChart() {
+        if (performanceAssignmentCombo == null || performanceDistributionBarChart == null) {
+            return;
+        }
+
+        DatabaseManager.AssetData selectedAssignment = performanceAssignmentCombo.getValue();
+        if (selectedAssignment == null) {
+            performanceDistributionBarChart.getData().clear();
+            if (performanceAssignmentHintLabel != null) {
+                performanceAssignmentHintLabel.setText(
+                    "Select an assignment with a passed deadline to view performance distribution."
+                );
+            }
+            if (performanceStatsLabel != null) {
+                performanceStatsLabel.setText("Total Submissions: 0    Not Submitted: 0");
+            }
+            return;
+        }
+
+        Map<Integer, DatabaseManager.SubmissionData> latestSubmissionByStudent = new HashMap<>();
+        for (DatabaseManager.SubmissionData submission : allGroupSubmissions) {
+            if (submission.getAssetId() != selectedAssignment.getId()) {
+                continue;
+            }
+
+            DatabaseManager.SubmissionData current = latestSubmissionByStudent.get(submission.getStudentId());
+            if (current == null || submission.getSubmissionTime().isAfter(current.getSubmissionTime())) {
+                latestSubmissionByStudent.put(submission.getStudentId(), submission);
+            }
+        }
+
+        int[] bucketCounts = new int[SCORE_RANGE_BUCKETS.length];
+        int gradedCount = 0;
+
+        for (DatabaseManager.SubmissionData submission : latestSubmissionByStudent.values()) {
+            if (!submission.isEvaluated() || submission.getGrade() == null) {
+                continue;
+            }
+
+            int score = Math.max(0, Math.min(100, submission.getGrade()));
+            int bucketIndex = score <= 10 ? 0 : (score - 1) / 10;
+            bucketCounts[bucketIndex]++;
+            gradedCount++;
+        }
+
+        XYChart.Series<String, Number> series = new XYChart.Series<>();
+        for (int i = 0; i < SCORE_RANGE_BUCKETS.length; i++) {
+            series.getData().add(new XYChart.Data<>(SCORE_RANGE_BUCKETS[i], bucketCounts[i]));
+        }
+        performanceDistributionBarChart.getData().clear();
+        performanceDistributionBarChart.getData().add(series);
+
+        int totalSubmissions = latestSubmissionByStudent.size();
+        int notSubmitted = Math.max(0, memberDataList.size() - totalSubmissions);
+
+        if (performanceAssignmentHintLabel != null) {
+            String deadlineText = selectedAssignment.getDeadline() != null
+                ? selectedAssignment.getDeadline().format(DT_FMT)
+                : "No deadline";
+            performanceAssignmentHintLabel.setText(
+                "Distribution for " + selectedAssignment.getTitle() + " (Deadline: " + deadlineText + ")"
+                    + (gradedCount == 0 ? " - No graded submissions yet." : "")
+            );
+        }
+
+        if (performanceStatsLabel != null) {
+            performanceStatsLabel.setText(
+                "Total Submissions: " + totalSubmissions + "    Not Submitted: " + notSubmitted
+            );
+        }
     }
 
     private boolean matchesSubmissionFilter(DatabaseManager.SubmissionData submission, String filter) {
@@ -1719,6 +2037,7 @@ public class GroupDetailsController {
             String feedback = feedbackArea.getText().trim();
             try {
                 dbManager.saveEvaluation(sub.getId(), grade, feedback);
+                progressTrackerService.notifyAssignmentDataChanged(sub.getStudentId(), groupId);
 
                 String assignmentTitle = sub.getAssignmentTitle();
                 String assetTitle = (assignmentTitle != null && !assignmentTitle.isBlank())
@@ -1739,6 +2058,169 @@ public class GroupDetailsController {
                 e.printStackTrace();
                 showAlert(AlertType.ERROR, "Database Error", "Failed to save evaluation: " + e.getMessage());
             }
+        }
+    }
+
+    @FXML
+    void handleRecordExamResult(ActionEvent event) {
+        if (memberDataList.isEmpty()) {
+            loadMembers();
+        }
+
+        if (memberDataList.isEmpty()) {
+            showAlert(AlertType.WARNING, "No Students", "No students are enrolled in this group yet.");
+            return;
+        }
+
+        DatabaseManager.SubmissionData selectedSubmission = submissionsTable != null
+            ? submissionsTable.getSelectionModel().getSelectedItem()
+            : null;
+        Integer preselectedStudentId = selectedSubmission != null ? selectedSubmission.getStudentId() : null;
+
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Record Exam Result");
+        dialog.setHeaderText("Add an exam/quiz result for a student in this group.");
+
+        ButtonType saveBtn = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(saveBtn, ButtonType.CANCEL);
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 140, 10, 10));
+
+        ComboBox<DatabaseManager.MemberData> studentCombo =
+            new ComboBox<>(FXCollections.observableArrayList(memberDataList));
+        studentCombo.setPrefWidth(260);
+        studentCombo.setCellFactory(list -> new ListCell<>() {
+            @Override
+            protected void updateItem(DatabaseManager.MemberData item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.getName() + " (" + item.getEmail() + ")");
+                }
+            }
+        });
+        studentCombo.setButtonCell(new ListCell<>() {
+            @Override
+            protected void updateItem(DatabaseManager.MemberData item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.getName() + " (" + item.getEmail() + ")");
+                }
+            }
+        });
+
+        if (preselectedStudentId != null) {
+            for (DatabaseManager.MemberData member : memberDataList) {
+                if (member.getId() == preselectedStudentId) {
+                    studentCombo.getSelectionModel().select(member);
+                    break;
+                }
+            }
+        }
+        if (studentCombo.getValue() == null) {
+            studentCombo.getSelectionModel().selectFirst();
+        }
+
+        TextField examTitleField = new TextField();
+        examTitleField.setPromptText("Example: Midterm Exam");
+
+        TextField scoreField = new TextField();
+        scoreField.setPromptText("Scored marks");
+
+        TextField maxScoreField = new TextField("100");
+        maxScoreField.setPromptText("Max marks");
+
+        DatePicker examDatePicker = new DatePicker(LocalDate.now());
+        examDatePicker.setDayCellFactory(picker -> new DateCell() {
+            @Override
+            public void updateItem(LocalDate item, boolean empty) {
+                super.updateItem(item, empty);
+                if (!empty && item != null && item.isAfter(LocalDate.now())) {
+                    setDisable(true);
+                }
+            }
+        });
+
+        grid.add(new Label("Student:"), 0, 0);
+        grid.add(studentCombo, 1, 0);
+        grid.add(new Label("Exam Title:"), 0, 1);
+        grid.add(examTitleField, 1, 1);
+        grid.add(new Label("Score:"), 0, 2);
+        grid.add(scoreField, 1, 2);
+        grid.add(new Label("Max Score:"), 0, 3);
+        grid.add(maxScoreField, 1, 3);
+        grid.add(new Label("Exam Date:"), 0, 4);
+        grid.add(examDatePicker, 1, 4);
+
+        dialog.getDialogPane().setContent(grid);
+
+        Optional<ButtonType> result = dialog.showAndWait();
+        if (result.isEmpty() || result.get() != saveBtn) {
+            return;
+        }
+
+        DatabaseManager.MemberData selectedStudent = studentCombo.getValue();
+        if (selectedStudent == null) {
+            showAlert(AlertType.WARNING, "Validation Error", "Please select a student.");
+            return;
+        }
+
+        String examTitle = examTitleField.getText() != null ? examTitleField.getText().trim() : "";
+        if (examTitle.isEmpty()) {
+            showAlert(AlertType.WARNING, "Validation Error", "Please enter an exam title.");
+            return;
+        }
+
+        double score;
+        double maxScore;
+        try {
+            score = Double.parseDouble(scoreField.getText().trim());
+            maxScore = Double.parseDouble(maxScoreField.getText().trim());
+        } catch (NumberFormatException ex) {
+            showAlert(AlertType.ERROR, "Invalid Input", "Score and Max Score must be valid numbers.");
+            return;
+        }
+
+        if (maxScore <= 0) {
+            showAlert(AlertType.WARNING, "Validation Error", "Max Score must be greater than 0.");
+            return;
+        }
+
+        if (score < 0 || score > maxScore) {
+            showAlert(AlertType.WARNING, "Validation Error",
+                "Score must be between 0 and Max Score.");
+            return;
+        }
+
+        LocalDate examDate = examDatePicker.getValue() != null ? examDatePicker.getValue() : LocalDate.now();
+
+        try {
+            dbManager.addExamResult(groupId, selectedStudent.getId(), examTitle, score, maxScore, examDate);
+            progressTrackerService.notifyExamDataChanged(selectedStudent.getId(), groupId);
+
+            try {
+                dbManager.createNotification(selectedStudent.getId(), "STUDENT",
+                    String.format("Exam result recorded for \"%s\": %.1f/%.1f", examTitle, score, maxScore));
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+
+            if (statusLabel != null) {
+                statusLabel.setText(String.format(
+                    "Recorded exam result for %s: %s (%.1f/%.1f).",
+                    selectedStudent.getName(), examTitle, score, maxScore
+                ));
+            }
+            showAlert(AlertType.INFORMATION, "Saved", "Exam result saved successfully.");
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            showAlert(AlertType.ERROR, "Database Error", "Failed to save exam result: " + ex.getMessage());
         }
     }
 

@@ -24,7 +24,7 @@
             <Font name="System Bold" size="18.0" />
          </font>
       </Label>
-      <Label text="Mark present/absent by date. Rows with low attendance are highlighted as at-risk." textFill="#64748b" />
+      <Label text="Mark all Present to start this as a working day. Then you can update attendance individually." textFill="#64748b" wrapText="true" />
 
       <HBox alignment="CENTER_LEFT" spacing="8.0">
          <children>
@@ -44,9 +44,7 @@
       <TableView fx:id="attendanceTable" editable="true" prefHeight="330.0" VBox.vgrow="ALWAYS">
          <columns>
             <TableColumn fx:id="colAttendanceStudent" prefWidth="280.0" text="Student" />
-            <TableColumn fx:id="colAttendanceStatus" prefWidth="180.0" text="Status" />
-            <TableColumn fx:id="colAttendancePercent" prefWidth="180.0" text="Attendance %" />
-            <TableColumn fx:id="colAttendanceRisk" prefWidth="220.0" text="Risk" />
+            <TableColumn fx:id="colAttendanceStatus" prefWidth="260.0" text="Attendance Status" />
          </columns>
       </TableView>
 

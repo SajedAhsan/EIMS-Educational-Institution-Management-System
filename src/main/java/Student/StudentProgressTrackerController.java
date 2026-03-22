@@ -5,9 +5,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -18,6 +16,8 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.chart.BarChart;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.PieChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Alert;
@@ -25,9 +25,11 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.Tooltip;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import progress.ProgressTrackerService;
 import progress.model.Assignment;
@@ -36,28 +38,26 @@ import progress.model.Exam;
 
 public class StudentProgressTrackerController {
 
-    // â”€â”€ Sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    @FXML private ListView<Course> courseListView;
+    private static final boolean DEBUG_ASSIGNMENT_CHART = false;
 
-    // â”€â”€ Course header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    @FXML private ListView<Course> courseListView;
     @FXML private Label selectedCourseLabel;
 
-    // â”€â”€ Attendance â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     @FXML private Label noAttendanceLabel;
     @FXML private Label attendanceDetailsLabel;
+    @FXML private Label attendanceWarningLabel;
     @FXML private PieChart attendancePieChart;
 
-    // â”€â”€ Assignments â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     @FXML private Label noAssignmentsLabel;
     @FXML private Label assignmentsSummaryLabel;
+    @FXML private Label assignmentAverageLabel;
+    @FXML private VBox assignmentColorLegendBox;
     @FXML private TableView<Assignment> assignmentsTable;
     @FXML private TableColumn<Assignment, String> colAssignmentTitle;
     @FXML private TableColumn<Assignment, String> colAssignmentScore;
-    @FXML private TableColumn<Assignment, String> colAssignmentMaxScore;
     @FXML private TableColumn<Assignment, String> colAssignmentStatus;
     @FXML private BarChart<String, Number> assignmentScoreBarChart;
 
-    // â”€â”€ Exams â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     @FXML private Label noExamsLabel;
     @FXML private Label examsSummaryLabel;
     @FXML private TableView<Exam> examsTable;
@@ -66,41 +66,77 @@ public class StudentProgressTrackerController {
     @FXML private TableColumn<Exam, String> colExamMaxScore;
     @FXML private BarChart<String, Number> examScoreBarChart;
 
-    // â”€â”€ State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private final DatabaseManager dbManager = DatabaseManager.getInstance();
     private final ProgressTrackerService progressService = ProgressTrackerService.getInstance();
 
+    private final ProgressTrackerService.ProgressDataListener progressListener = this::handleProgressDataChanged;
+
     private String studentEmail;
-    private int    studentId   = -1;
+    private int studentId = -1;
     private String studentName = "Student";
     private List<Course> studentCourses = new ArrayList<>();
-
-    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-    //  Lifecycle
-    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    private boolean progressListenerRegistered;
 
     public void initialize() {
+        rebuildAssignmentChartWithExplicitAxes();
         setupCourseListView();
         setupTableColumns();
+        setupChartAxes();
         resetDashboardState("Select a course from the left.");
     }
 
-    /**
-     * Called by the parent controller (studentDashboardController) after FXML load.
-     * Resolves the student identity, loads courses from DB, and selects the first one.
-     */
+    private void rebuildAssignmentChartWithExplicitAxes() {
+        if (assignmentScoreBarChart == null) {
+            return;
+        }
+
+        CategoryAxis xAxis = new CategoryAxis();
+        NumberAxis yAxis = new NumberAxis(0, 100, 10);
+
+        xAxis.setLabel("Assignment Number");
+        yAxis.setLabel("Number Achieved");
+
+        yAxis.setAutoRanging(false);
+        yAxis.setLowerBound(0);
+        yAxis.setUpperBound(100);
+        yAxis.setTickUnit(10);
+
+        xAxis.setTickLabelsVisible(true);
+        yAxis.setTickLabelsVisible(true);
+        xAxis.setTickMarkVisible(true);
+        yAxis.setTickMarkVisible(true);
+        xAxis.setOpacity(1.0);
+        yAxis.setOpacity(1.0);
+
+        BarChart<String, Number> rebuiltChart = new BarChart<>(xAxis, yAxis);
+        rebuiltChart.setTitle("Assignments Performance");
+        rebuiltChart.setLegendVisible(false);
+        rebuiltChart.setAnimated(false);
+        rebuiltChart.setPrefHeight(400);
+
+        Node oldChart = assignmentScoreBarChart;
+        if (oldChart.getParent() instanceof VBox) {
+            VBox parent = (VBox) oldChart.getParent();
+            int chartIndex = parent.getChildren().indexOf(oldChart);
+            parent.getChildren().set(chartIndex, rebuiltChart);
+            assignmentScoreBarChart = rebuiltChart;
+        }
+    }
+
     public void setStudentEmail(String email) {
         this.studentEmail = email;
         resolveStudentIdentity(email);
 
         progressService.ensureStudentExists(studentId, studentName, email);
         studentCourses = new ArrayList<>();
+
         try {
             List<DatabaseManager.GroupData> groups = dbManager.getGroupsByStudent(studentId);
             if (groups != null) {
-                for (DatabaseManager.GroupData g : groups) {
-                    Course course = new Course(g.getId(), "GRP-" + g.getId(), g.getName());
+                for (DatabaseManager.GroupData group : groups) {
+                    Course course = new Course(group.getId(), "GRP-" + group.getId(), group.getName());
                     progressService.ensureCourseExists(course.getId(), course.getCode(), course.getTitle());
+                    progressService.enrollStudentInCourse(studentId, course.getId());
                     studentCourses.add(course);
                 }
             }
@@ -108,12 +144,13 @@ public class StudentProgressTrackerController {
             showAlert(AlertType.ERROR, "Database Error", "Failed to load enrolled courses: " + ex.getMessage());
         }
 
+        if (!progressListenerRegistered) {
+            progressService.addProgressDataListener(progressListener);
+            progressListenerRegistered = true;
+        }
+
         loadCourses();
     }
-
-    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-    //  Navigation
-    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
     @FXML
     void handleBack(ActionEvent event) {
@@ -130,57 +167,73 @@ public class StudentProgressTrackerController {
         }
     }
 
-    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-    //  Dashboard update  (called when a course is selected)
-    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-
-    /** Updates every section for the chosen course â€” called on sidebar click. */
     private void updateDashboardForCourse(Course course) {
         ProgressTrackerService.CourseMetrics metrics =
             progressService.getCourseMetrics(studentId, course.getId());
-        List<Assignment> assignments = loadAssignmentsForCourse(course.getId());
-        int totalClassDays = progressService.getTotalClassDays(course.getId());
+
+        int totalClassDays = metrics.getPresentDays() + metrics.getAbsentDays();
+        List<Assignment> assignments = metrics.getAssignments();
+        List<Exam> exams = metrics.getExams();
+        boolean hasAssessments = !assignments.isEmpty() || !exams.isEmpty();
 
         if (selectedCourseLabel != null) {
-            selectedCourseLabel.setText(course.getCode() + "  â€”  " + course.getTitle());
+            selectedCourseLabel.setText(course.getCode() + "  -  " + course.getTitle());
         }
 
         updateAttendanceSection(metrics, totalClassDays);
         updateAssignmentsSection(assignments);
-        updateExamsSection();
+        updateExamsSection(exams, hasAssessments);
     }
 
-    // â”€â”€ Attendance â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
     private void updateAttendanceSection(ProgressTrackerService.CourseMetrics metrics, int totalClassDays) {
-        boolean hasData = totalClassDays > 0;
+        boolean hasClasses = totalClassDays > 0;
 
-        show(noAttendanceLabel,    !hasData);
-        show(attendanceDetailsLabel, hasData);
-        show(attendancePieChart,     hasData);
+        if (noAttendanceLabel != null) {
+            noAttendanceLabel.setText("No classes conducted yet");
+        }
 
-        if (!hasData) return;
+        show(noAttendanceLabel, !hasClasses);
+        show(attendanceDetailsLabel, hasClasses);
+        show(attendancePieChart, hasClasses);
+        show(attendanceWarningLabel, false);
 
-        int present = metrics.getPresentDays();
-        int absent  = metrics.getAbsentDays();
+        if (!hasClasses) {
+            if (attendancePieChart != null) {
+                attendancePieChart.getData().clear();
+            }
+            return;
+        }
+
+        int presentDays = metrics.getPresentDays();
+        double presentPct = (presentDays * 100.0) / totalClassDays;
+        double absentPct = 100.0 - presentPct;
 
         if (attendanceDetailsLabel != null) {
             attendanceDetailsLabel.setText(String.format(
-                "Total class days: %d  |  Present: %d  |  Absent: %d  |  Attendance: %.1f%%",
-                totalClassDays, present, absent, metrics.getAttendancePercent()));
+                "Total classes: %d  |  Present: %.1f%%  |  Absent: %.1f%%",
+                totalClassDays,
+                presentPct,
+                absentPct
+            ));
+        }
+
+        if (attendanceWarningLabel != null) {
+            attendanceWarningLabel.setText("Warning: Attendance below 80%");
+            attendanceWarningLabel.setStyle("-fx-text-fill: #dc2626; -fx-font-weight: bold;");
+            show(attendanceWarningLabel, absentPct >= 20.0);
         }
 
         if (attendancePieChart != null) {
             attendancePieChart.setData(FXCollections.observableArrayList(
-                new PieChart.Data("Present (" + present + " days)", present),
-                new PieChart.Data("Absent ("  + absent  + " days)", absent)
+                new PieChart.Data(String.format("Present %.1f%%", presentPct), presentPct),
+                new PieChart.Data(String.format("Absent %.1f%%", absentPct), absentPct)
             ));
-            // Apply green / red colours after JavaFX has built the nodes.
+
             Platform.runLater(() -> {
                 var data = attendancePieChart.getData();
                 if (data.size() >= 2) {
-                    applySliceColor(data.get(0), "#22c55e"); // green â€“ present
-                    applySliceColor(data.get(1), "#ef4444"); // red   â€“ absent
+                    applySliceColor(data.get(0), "#22c55e");
+                    applySliceColor(data.get(1), "#ef4444");
                 }
                 for (PieChart.Data d : data) {
                     if (d.getNode() != null) {
@@ -191,30 +244,37 @@ public class StudentProgressTrackerController {
         }
     }
 
-    // â”€â”€ Assignments â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
     private void updateAssignmentsSection(List<Assignment> assignments) {
         boolean hasAssignments = !assignments.isEmpty();
-        int gradedAssignments = 0;
-        double totalScorePercent = 0.0;
 
+        int gradedAssignments = 0;
+        int underEvaluationAssignments = 0;
+        int notSubmittedAssignments = 0;
+        double gradedScoreTotal = 0.0;
         for (Assignment assignment : assignments) {
-            if (assignment.isCompleted()) {
+            String status = resolveAssignmentStatus(assignment);
+            if ("Graded".equalsIgnoreCase(status) && assignment.getScore() != null) {
                 gradedAssignments++;
-                totalScorePercent += assignment.getScorePercent();
+                gradedScoreTotal += toScoreOutOf100(assignment.getScore(), assignment.getMaxScore());
+            } else if (isPendingEvaluationStatus(status)) {
+                underEvaluationAssignments++;
+            } else {
+                notSubmittedAssignments++;
             }
         }
 
-        boolean hasGrades = gradedAssignments > 0;
+        boolean hasGradedAssignments = gradedAssignments > 0;
 
         if (noAssignmentsLabel != null) {
-            noAssignmentsLabel.setText("No assignment given so far.");
+            noAssignmentsLabel.setText("No assignments given so far");
         }
 
         show(noAssignmentsLabel, !hasAssignments);
         show(assignmentsSummaryLabel, hasAssignments);
+        show(assignmentAverageLabel, hasAssignments);
+        show(assignmentColorLegendBox, hasAssignments);
         show(assignmentsTable, hasAssignments);
-        show(assignmentScoreBarChart, hasAssignments && hasGrades);
+        show(assignmentScoreBarChart, hasAssignments);
 
         if (assignmentsTable != null) {
             assignmentsTable.setItems(FXCollections.observableArrayList(assignments));
@@ -223,63 +283,184 @@ public class StudentProgressTrackerController {
         if (assignmentScoreBarChart != null) {
             assignmentScoreBarChart.getData().clear();
         }
+        if (assignmentAverageLabel != null) {
+            assignmentAverageLabel.setText("Average Score: --");
+        }
 
         if (!hasAssignments) {
             return;
         }
 
         if (assignmentsSummaryLabel != null) {
-            String averageText = hasGrades
-                ? String.format("%.1f / 100", totalScorePercent / gradedAssignments)
-                : "-- / 100";
             assignmentsSummaryLabel.setText(String.format(
-                "Assignments given: %d  |  Graded: %d / %d  |  Average: %s",
+                "Assignments: %d  |  Graded: %d  |  Under Evaluation: %d  |  Not Submitted: %d",
                 assignments.size(),
                 gradedAssignments,
-                assignments.size(),
-                averageText));
+                underEvaluationAssignments,
+                notSubmittedAssignments
+            ));
+        }
+        if (assignmentAverageLabel != null) {
+            assignmentAverageLabel.setText(hasGradedAssignments
+                ? String.format("Average Score: %s", formatScoreValue(gradedScoreTotal / gradedAssignments))
+                : "Average Score: --");
         }
 
-        if (assignmentScoreBarChart != null && hasGrades) {
+        if (assignmentScoreBarChart != null) {
             XYChart.Series<String, Number> series = new XYChart.Series<>();
-            series.setName("Grade / 100");
-            for (Assignment assignment : assignments) {
-                if (assignment.isCompleted()) {
-                    series.getData().add(new XYChart.Data<>(
-                        assignment.getTitle(),
-                        assignment.getScorePercent()));
+            series.setName("Score");
+
+            var dataPoints = FXCollections.<XYChart.Data<String, Number>>observableArrayList();
+            var categories = FXCollections.<String>observableArrayList();
+
+            for (int index = 0; index < assignments.size(); index++) {
+                Assignment assignment = assignments.get(index);
+                String status = resolveAssignmentStatus(assignment);
+                double score;
+                if ("Graded".equalsIgnoreCase(status) && assignment.getScore() != null) {
+                    score = toScoreOutOf100(assignment.getScore(), assignment.getMaxScore());
+                } else {
+                    score = 0.0;
+                }
+
+                String assignmentCategory = String.valueOf(index + 1);
+                categories.add(assignmentCategory);
+
+                dataPoints.add(new XYChart.Data<>(
+                    assignmentCategory,
+                    score
+                ));
+            }
+
+            if (assignmentScoreBarChart.getXAxis() instanceof CategoryAxis) {
+                CategoryAxis xAxis = (CategoryAxis) assignmentScoreBarChart.getXAxis();
+                xAxis.setCategories(categories);
+                if (DEBUG_ASSIGNMENT_CHART) {
+                    System.out.println("Assignment categories: " + categories);
                 }
             }
+
+            series.setData(dataPoints);
+
+            assignmentScoreBarChart.getData().clear();
             assignmentScoreBarChart.getData().add(series);
-            applyBarTooltips(series, "%");
+            applyAssignmentBarStyles(series, assignments);
         }
     }
 
-    // â”€â”€ Exams â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    private void updateExamsSection(List<Exam> exams, boolean hasAssessments) {
+        boolean hasExams = !exams.isEmpty();
 
-    private void updateExamsSection() {
-        if (noExamsLabel != null) {
-            noExamsLabel.setText("No exams taken so far.");
+        int takenExams = 0;
+        double takenExamScoreTotal = 0.0;
+        for (Exam exam : exams) {
+            if (exam.getScore() != null) {
+                takenExams++;
+                takenExamScoreTotal += toScoreOutOf100(exam.getScore(), exam.getMaxScore());
+            }
         }
-        show(noExamsLabel, true);
-        show(examsSummaryLabel, false);
-        show(examsTable, false);
-        show(examScoreBarChart, false);
+
+        boolean hasGradedExams = takenExams > 0;
+
+        if (noExamsLabel != null) {
+            noExamsLabel.setText(hasAssessments
+                ? "No exams available."
+                : "No assignments/exams taken so far");
+        }
+
+        show(noExamsLabel, !hasExams);
+        show(examsSummaryLabel, hasExams);
+        show(examsTable, hasExams);
+        show(examScoreBarChart, hasExams);
 
         if (examsTable != null) {
-            examsTable.getItems().clear();
+            examsTable.setItems(FXCollections.observableArrayList(exams));
         }
+
         if (examScoreBarChart != null) {
             examScoreBarChart.getData().clear();
         }
+
+        if (!hasExams) {
+            return;
+        }
+
+        if (examsSummaryLabel != null) {
+            String avgText = hasGradedExams
+                ? String.format("%.1f / 100", takenExamScoreTotal / takenExams)
+                : "No graded exams yet";
+            examsSummaryLabel.setText(String.format(
+                "Exams: %d  |  Evaluated: %d  |  Average: %s",
+                exams.size(),
+                takenExams,
+                avgText
+            ));
+        }
+
+        if (examScoreBarChart != null) {
+            XYChart.Series<String, Number> series = new XYChart.Series<>();
+            series.setName("Score");
+
+            for (int index = 0; index < exams.size(); index++) {
+                Exam exam = exams.get(index);
+                double score = exam.getScore() != null
+                    ? toScoreOutOf100(exam.getScore(), exam.getMaxScore())
+                    : 0.0;
+
+                series.getData().add(new XYChart.Data<>(
+                    String.valueOf(index + 1),
+                    score
+                ));
+            }
+
+            examScoreBarChart.getData().clear();
+            examScoreBarChart.getData().add(series);
+            applyExamBarStyles(series, exams);
+        }
     }
 
-    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-    //  Setup helpers
-    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    private void setupChartAxes() {
+        configureChartAxes(assignmentScoreBarChart, "Assignment Number", "Number Achieved");
+        configureChartAxes(examScoreBarChart, "Exam Number", "Number Achieved");
+    }
+
+    private void configureChartAxes(BarChart<String, Number> chart, String xLabel, String yLabel) {
+        if (chart == null) {
+            return;
+        }
+
+        if (chart.getXAxis() instanceof CategoryAxis) {
+            CategoryAxis axis = (CategoryAxis) chart.getXAxis();
+            axis.setLabel(xLabel);
+            axis.setTickLabelsVisible(true);
+            axis.setTickMarkVisible(true);
+            axis.setOpacity(1.0);
+        }
+
+        if (chart.getYAxis() instanceof NumberAxis) {
+            NumberAxis axis = (NumberAxis) chart.getYAxis();
+            axis.setLabel(yLabel);
+            axis.setAutoRanging(false);
+            axis.setLowerBound(0);
+            axis.setUpperBound(100);
+            axis.setTickUnit(10);
+            axis.setTickLabelsVisible(true);
+            axis.setTickMarkVisible(true);
+            axis.setOpacity(1.0);
+        }
+
+        chart.setLegendVisible(false);
+        if (chart == assignmentScoreBarChart) {
+            chart.setTitle("Assignments Performance");
+            chart.setPrefHeight(400);
+        }
+    }
 
     private void setupCourseListView() {
-        if (courseListView == null) return;
+        if (courseListView == null) {
+            return;
+        }
+
         courseListView.setCellFactory(list -> new ListCell<>() {
             @Override
             protected void updateItem(Course item, boolean empty) {
@@ -287,55 +468,116 @@ public class StudentProgressTrackerController {
                 setText(empty || item == null ? null : item.toString());
             }
         });
+
         courseListView.getSelectionModel().selectedItemProperty()
             .addListener((obs, oldVal, newVal) -> {
-                if (newVal != null) updateDashboardForCourse(newVal);
+                if (newVal != null) {
+                    updateDashboardForCourse(newVal);
+                }
             });
     }
 
     private void setupTableColumns() {
         if (assignmentsTable != null) {
-            if (colAssignmentTitle != null)
+            if (colAssignmentTitle != null) {
                 colAssignmentTitle.setCellValueFactory(c ->
                     new SimpleStringProperty(c.getValue().getTitle()));
-            if (colAssignmentScore != null)
+            }
+
+            if (colAssignmentScore != null) {
                 colAssignmentScore.setCellValueFactory(c -> {
-                    Assignment a = c.getValue();
-                    return new SimpleStringProperty(a.isCompleted()
-                        ? String.format("%.0f", a.getScore()) : "--");
+                    Assignment assignment = c.getValue();
+                    String status = resolveAssignmentStatus(assignment);
+                    if ("Graded".equalsIgnoreCase(status) && assignment.getScore() != null) {
+                        return new SimpleStringProperty(
+                            String.format("%.0f", toScoreOutOf100(assignment.getScore(), assignment.getMaxScore()))
+                        );
+                    }
+                    if ("Not Submitted".equalsIgnoreCase(status)) {
+                        return new SimpleStringProperty("0");
+                    }
+                    return new SimpleStringProperty(
+                        "-"
+                    );
                 });
-            if (colAssignmentMaxScore != null)
-                colAssignmentMaxScore.setCellValueFactory(c ->
-                    new SimpleStringProperty(String.format("%.0f", c.getValue().getMaxScore())));
-            if (colAssignmentStatus != null)
+            }
+
+            if (colAssignmentStatus != null) {
                 colAssignmentStatus.setCellValueFactory(c ->
-                    new SimpleStringProperty(c.getValue().getStatus()));
+                    new SimpleStringProperty(resolveAssignmentStatus(c.getValue())));
+                colAssignmentStatus.setCellFactory(column -> new TableCell<Assignment, String>() {
+                    @Override
+                    protected void updateItem(String item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (empty || item == null) {
+                            setText(null);
+                            setStyle("");
+                            return;
+                        }
+
+                        setText(item);
+                        if ("Under Evaluation".equalsIgnoreCase(item)) {
+                            setStyle("-fx-background-color: #fef9c3; -fx-text-fill: #92400e; -fx-font-weight: bold;");
+                        } else if ("Not Submitted".equalsIgnoreCase(item)) {
+                            setStyle("-fx-background-color: #fee2e2; -fx-text-fill: #991b1b;");
+                        } else if ("Graded".equalsIgnoreCase(item)) {
+                            setStyle("-fx-background-color: #dcfce7; -fx-text-fill: #166534; -fx-font-weight: bold;");
+                        } else {
+                            setStyle("");
+                        }
+                    }
+                });
+            }
         }
 
         if (examsTable != null) {
-            if (colExamTitle != null)
+            if (colExamTitle != null) {
                 colExamTitle.setCellValueFactory(c ->
                     new SimpleStringProperty(c.getValue().getTitle()));
-            if (colExamScore != null)
+            }
+
+            if (colExamScore != null) {
                 colExamScore.setCellValueFactory(c -> {
-                    Exam e = c.getValue();
-                    return new SimpleStringProperty(e.isTaken()
-                        ? String.format("%.0f", e.getScore()) : "--");
+                    Exam exam = c.getValue();
+                    return new SimpleStringProperty(
+                        exam.getScore() != null
+                            ? String.format("%.0f", toScoreOutOf100(exam.getScore(), exam.getMaxScore()))
+                            : "--"
+                    );
                 });
-            if (colExamMaxScore != null)
+            }
+
+            if (colExamMaxScore != null) {
                 colExamMaxScore.setCellValueFactory(c ->
                     new SimpleStringProperty(String.format("%.0f", c.getValue().getMaxScore())));
+            }
         }
     }
 
-    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-    //  Identity resolution
-    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    private void handleProgressDataChanged(ProgressTrackerService.ProgressDataEvent event) {
+        if (event == null || studentId <= 0 || courseListView == null) {
+            return;
+        }
+
+        Course selected = courseListView.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            return;
+        }
+
+        if (!event.matches(studentId, selected.getId())) {
+            return;
+        }
+
+        Platform.runLater(this::refreshCurrentCourse);
+    }
 
     private void resolveStudentIdentity(String email) {
         try {
             int id = dbManager.getStudentIdByEmail(email);
-            if (id > 0) studentId = id;
+            if (id > 0) {
+                studentId = id;
+            }
+
             DatabaseManager.StudentProfileData profile = dbManager.getStudentProfile(email);
             if (profile != null && profile.getName() != null && !profile.getName().isBlank()) {
                 studentName = profile.getName();
@@ -343,66 +585,28 @@ public class StudentProgressTrackerController {
                 studentName = email;
             }
         } catch (SQLException ex) {
-            if (email != null && !email.isBlank()) studentName = email;
+            if (email != null && !email.isBlank()) {
+                studentName = email;
+            }
         }
+
         if (studentId <= 0) {
             studentId = Math.abs((email == null ? "student" : email).hashCode());
         }
     }
 
     private void loadCourses() {
-        if (courseListView != null) {
-            courseListView.setItems(FXCollections.observableArrayList(studentCourses));
-            if (!studentCourses.isEmpty()) {
-                courseListView.getSelectionModel().selectFirst();
-            } else {
-                resetDashboardState("No enrolled courses found.");
-            }
+        if (courseListView == null) {
+            return;
+        }
+
+        courseListView.setItems(FXCollections.observableArrayList(studentCourses));
+        if (!studentCourses.isEmpty()) {
+            courseListView.getSelectionModel().selectFirst();
+        } else {
+            resetDashboardState("No enrolled courses found.");
         }
     }
-
-    private List<Assignment> loadAssignmentsForCourse(int courseId) {
-        List<Assignment> assignments = new ArrayList<>();
-        try {
-            List<DatabaseManager.AssetData> assets = dbManager.getGroupAssets(courseId);
-            Map<Integer, DatabaseManager.SubmissionData> submissionsByAssetId = new LinkedHashMap<>();
-
-            for (DatabaseManager.SubmissionData submission : dbManager.getSubmissionsByGroupAndStudent(courseId, studentId)) {
-                submissionsByAssetId.put(submission.getAssetId(), submission);
-            }
-
-            for (DatabaseManager.AssetData asset : assets) {
-                DatabaseManager.SubmissionData submission = submissionsByAssetId.get(asset.getId());
-                Double score = null;
-                String status = "Not Submitted";
-
-                if (submission != null) {
-                    if (submission.isEvaluated() && submission.getGrade() != null) {
-                        score = submission.getGrade().doubleValue();
-                        status = "Graded";
-                    } else {
-                        status = "Submitted";
-                    }
-                }
-
-                assignments.add(new Assignment(
-                    asset.getId(),
-                    courseId,
-                    asset.getTitle(),
-                    100.0,
-                    score,
-                    status
-                ));
-            }
-        } catch (SQLException ex) {
-            showAlert(AlertType.ERROR, "Database Error", "Failed to load assignment progress: " + ex.getMessage());
-        }
-        return assignments;
-    }
-
-    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-    //  Public API â€” allows other controllers to push live data updates
-    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
     public void addAssignmentResult(int courseId, String title, double scoreOutOf100) {
         progressService.addAssignment(studentId, courseId, title, 100.0, scoreOutOf100);
@@ -410,19 +614,23 @@ public class StudentProgressTrackerController {
     }
 
     public void addExamResult(int courseId, String title, double scoreOutOf100) {
-        progressService.addExam(studentId, courseId, title, 100.0, scoreOutOf100);
+        progressService.addExamResult(studentId, courseId, title, 100.0, scoreOutOf100, LocalDate.now());
         refreshCurrentCourse();
     }
 
     public void updateAttendance(int courseId, LocalDate date, boolean present) {
+        progressService.ensureWorkingDayWithDefaultPresent(courseId, List.of(studentId), date);
         progressService.markAttendance(studentId, courseId, date, present);
         refreshCurrentCourse();
     }
 
     private void refreshCurrentCourse() {
         Course selected = courseListView != null
-            ? courseListView.getSelectionModel().getSelectedItem() : null;
-        if (selected != null) updateDashboardForCourse(selected);
+            ? courseListView.getSelectionModel().getSelectedItem()
+            : null;
+        if (selected != null) {
+            updateDashboardForCourse(selected);
+        }
     }
 
     private void resetDashboardState(String courseMessage) {
@@ -431,20 +639,23 @@ public class StudentProgressTrackerController {
         }
 
         if (noAttendanceLabel != null) {
-            noAttendanceLabel.setText("No attendance recorded yet. Attendance is marked by the teacher; absent by default.");
+            noAttendanceLabel.setText("No classes conducted yet");
         }
         show(noAttendanceLabel, true);
         show(attendanceDetailsLabel, false);
+        show(attendanceWarningLabel, false);
         show(attendancePieChart, false);
         if (attendancePieChart != null) {
             attendancePieChart.getData().clear();
         }
 
         if (noAssignmentsLabel != null) {
-            noAssignmentsLabel.setText("No assignment given so far.");
+            noAssignmentsLabel.setText("No assignments given so far");
         }
         show(noAssignmentsLabel, true);
         show(assignmentsSummaryLabel, false);
+        show(assignmentAverageLabel, false);
+        show(assignmentColorLegendBox, false);
         show(assignmentsTable, false);
         show(assignmentScoreBarChart, false);
         if (assignmentsTable != null) {
@@ -453,9 +664,12 @@ public class StudentProgressTrackerController {
         if (assignmentScoreBarChart != null) {
             assignmentScoreBarChart.getData().clear();
         }
+        if (assignmentAverageLabel != null) {
+            assignmentAverageLabel.setText("Average Score: --");
+        }
 
         if (noExamsLabel != null) {
-            noExamsLabel.setText("No exams taken so far.");
+            noExamsLabel.setText("No assignments/exams taken so far");
         }
         show(noExamsLabel, true);
         show(examsSummaryLabel, false);
@@ -469,34 +683,129 @@ public class StudentProgressTrackerController {
         }
     }
 
-    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-    //  Utility helpers
-    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-
-    /** Show or hide a node (also toggles managed so it takes no space when hidden). */
-    private static void show(javafx.scene.Node node, boolean visible) {
-        if (node == null) return;
+    private static void show(Node node, boolean visible) {
+        if (node == null) {
+            return;
+        }
         node.setVisible(visible);
         node.setManaged(visible);
     }
 
-    /** Apply an inline CSS fill colour to a pie slice node. */
     private static void applySliceColor(PieChart.Data slice, String hexColor) {
         if (slice.getNode() != null) {
             slice.getNode().setStyle("-fx-pie-color: " + hexColor + ";");
         }
     }
 
-    private void applyBarTooltips(XYChart.Series<String, Number> series, String suffix) {
+    private String resolveAssignmentStatus(Assignment assignment) {
+        if (assignment == null) {
+            return "Not Submitted";
+        }
+
+        String status = assignment.getStatus();
+        if (status == null || status.isBlank()) {
+            return assignment.getScore() != null ? "Graded" : "Not Submitted";
+        }
+        return status;
+    }
+
+    private double toScoreOutOf100(Double score, double maxScore) {
+        if (score == null) {
+            return 0.0;
+        }
+        if (maxScore <= 0) {
+            return Math.max(0.0, Math.min(100.0, score));
+        }
+
+        double normalized = (score / maxScore) * 100.0;
+        return Math.max(0.0, Math.min(100.0, normalized));
+    }
+
+    private void applyAssignmentBarStyles(XYChart.Series<String, Number> series, List<Assignment> assignments) {
+        if (series == null || assignments == null) {
+            return;
+        }
+
         Platform.runLater(() -> {
-            for (XYChart.Data<String, Number> d : series.getData()) {
-                if (d.getNode() != null) {
-                    Tooltip.install(d.getNode(), new Tooltip(
-                        d.getXValue() + ": "
-                        + String.format("%.1f", d.getYValue().doubleValue()) + suffix));
+            List<XYChart.Data<String, Number>> bars = series.getData();
+            for (int i = 0; i < bars.size() && i < assignments.size(); i++) {
+                XYChart.Data<String, Number> data = bars.get(i);
+                Assignment assignment = assignments.get(i);
+                String status = resolveAssignmentStatus(assignment);
+                double score = data.getYValue().doubleValue();
+
+                if (data.getNode() != null) {
+                    boolean pendingEvaluation = isPendingEvaluationStatus(status);
+                    if (pendingEvaluation) {
+                        data.getNode().setStyle("-fx-bar-fill: #94a3b8;");
+                    } else {
+                        data.getNode().setStyle("-fx-bar-fill: " + resolveAssignmentBarColor(score) + ";");
+                    }
+
+                    Tooltip.install(data.getNode(), createChartTooltip(
+                        "Assignment " + (i + 1),
+                        pendingEvaluation
+                            ? "Submitted, not graded yet"
+                            : String.format("Score: %s marks", formatScoreValue(score))
+                    ));
                 }
             }
         });
+    }
+
+    private void applyExamBarStyles(XYChart.Series<String, Number> series, List<Exam> exams) {
+        if (series == null || exams == null) {
+            return;
+        }
+
+        Platform.runLater(() -> {
+            List<XYChart.Data<String, Number>> bars = series.getData();
+            for (int i = 0; i < bars.size() && i < exams.size(); i++) {
+                XYChart.Data<String, Number> data = bars.get(i);
+                Exam exam = exams.get(i);
+                boolean graded = exam.getScore() != null;
+
+                if (data.getNode() != null) {
+                    data.getNode().setStyle(graded
+                        ? "-fx-bar-fill: #0ea5e9;"
+                        : "-fx-bar-fill: #94a3b8;");
+
+                    Tooltip.install(data.getNode(), createChartTooltip(
+                        exam.getTitle(),
+                        (graded ? "Evaluated" : "Under Evaluation")
+                            + " | Score: " + formatScoreValue(data.getYValue().doubleValue()) + "/100"
+                    ));
+                }
+            }
+        });
+    }
+
+    private boolean isPendingEvaluationStatus(String status) {
+        return "Under Evaluation".equalsIgnoreCase(status) || "Submitted".equalsIgnoreCase(status);
+    }
+
+    private String resolveAssignmentBarColor(double scoreOutOf100) {
+        if (scoreOutOf100 < 40.0) {
+            return "#ef4444";
+        }
+        if (scoreOutOf100 < 60.0) {
+            return "#eab308";
+        }
+        if (scoreOutOf100 < 80.0) {
+            return "#22c55e";
+        }
+        return "#a855f7";
+    }
+
+    private Tooltip createChartTooltip(String title, String detail) {
+        return new Tooltip(title + "\n" + detail);
+    }
+
+    private String formatScoreValue(double value) {
+        if (Math.abs(value - Math.rint(value)) < 0.0001) {
+            return String.format("%.0f", value);
+        }
+        return String.format("%.1f", value);
     }
 
     private void showAlert(AlertType type, String title, String message) {

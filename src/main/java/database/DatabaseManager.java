@@ -7,6 +7,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.sql.Date;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -133,6 +135,40 @@ public class DatabaseManager {
             stmt.execute("ALTER TABLE submissions ADD COLUMN IF NOT EXISTS plagiarized BOOLEAN DEFAULT FALSE");
             stmt.execute("ALTER TABLE submissions ADD COLUMN IF NOT EXISTS similarity_score DOUBLE PRECISION DEFAULT 0.0");
             stmt.execute("ALTER TABLE submissions ADD COLUMN IF NOT EXISTS matched_submission_id INT");
+
+            // Create working_days table
+            stmt.execute("CREATE TABLE IF NOT EXISTS working_days (" +
+                "group_id INT NOT NULL, " +
+                "class_date DATE NOT NULL, " +
+                "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
+                "PRIMARY KEY(group_id, class_date), " +
+                "FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE)");
+
+            // Create attendance_records table
+            stmt.execute("CREATE TABLE IF NOT EXISTS attendance_records (" +
+                "group_id INT NOT NULL, " +
+                "student_id INT NOT NULL, " +
+                "class_date DATE NOT NULL, " +
+                "status VARCHAR(10) NOT NULL, " +
+                "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
+                "PRIMARY KEY(group_id, student_id, class_date), " +
+                "FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE, " +
+                "FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE)");
+
+            // Create exam_results table
+            stmt.execute("CREATE TABLE IF NOT EXISTS exam_results (" +
+                "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                "group_id INT NOT NULL, " +
+                "student_id INT NOT NULL, " +
+                "title VARCHAR(255) NOT NULL, " +
+                "score DOUBLE PRECISION, " +
+                "max_score DOUBLE PRECISION NOT NULL DEFAULT 100.0, " +
+                "exam_date DATE, " +
+                "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
+                "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
+                "FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE, " +
+                "FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE)");
+            stmt.execute("CREATE INDEX IF NOT EXISTS idx_exam_results_group_student ON exam_results(group_id, student_id)");
 
             // Create notifications table
             stmt.execute("CREATE TABLE IF NOT EXISTS notifications (" +
@@ -622,6 +658,246 @@ public class DatabaseManager {
         return null;
     }
 
+    // ── Attendance persistence ──────────────────────────────────────────────
+
+    public void ensureWorkingDayWithDefaultPresent(int groupId, List<Integer> studentIds, LocalDate classDate) throws SQLException {
+        if (classDate == null) {
+            throw new IllegalArgumentException("classDate cannot be null");
+        }
+
+        if (isWorkingDay(groupId, classDate)) {
+            return;
+        }
+
+        markWorkingDay(groupId, classDate);
+        initializeAttendanceForWorkingDay(groupId, studentIds, classDate);
+    }
+
+    public void markWorkingDay(int groupId, LocalDate classDate) throws SQLException {
+        String sql = "MERGE INTO working_days (group_id, class_date) KEY(group_id, class_date) VALUES (?, ?)";
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
+            pstmt.setInt(1, groupId);
+            pstmt.setDate(2, Date.valueOf(classDate));
+            pstmt.executeUpdate();
+        }
+    }
+
+    public boolean isWorkingDay(int groupId, LocalDate classDate) throws SQLException {
+        String sql = "SELECT 1 FROM working_days WHERE group_id = ? AND class_date = ?";
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
+            pstmt.setInt(1, groupId);
+            pstmt.setDate(2, Date.valueOf(classDate));
+            try (ResultSet rs = pstmt.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
+    public List<LocalDate> getWorkingDays(int groupId) throws SQLException {
+        String sql = "SELECT class_date FROM working_days WHERE group_id = ? ORDER BY class_date";
+        List<LocalDate> days = new ArrayList<>();
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
+            pstmt.setInt(1, groupId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    days.add(rs.getDate("class_date").toLocalDate());
+                }
+            }
+        }
+        return days;
+    }
+
+    public void initializeAttendanceForWorkingDay(int groupId,
+                                                  List<Integer> studentIds,
+                                                  LocalDate classDate) throws SQLException {
+        if (studentIds == null || studentIds.isEmpty() || classDate == null) {
+            return;
+        }
+
+        String sql = "MERGE INTO attendance_records (group_id, student_id, class_date, status, updated_at) " +
+                     "KEY(group_id, student_id, class_date) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)";
+
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
+            for (Integer studentId : studentIds) {
+                if (studentId == null) {
+                    continue;
+                }
+                pstmt.setInt(1, groupId);
+                pstmt.setInt(2, studentId);
+                pstmt.setDate(3, Date.valueOf(classDate));
+                pstmt.setString(4, "Present");
+                pstmt.addBatch();
+            }
+            pstmt.executeBatch();
+        }
+    }
+
+    public void saveAttendanceRecord(int groupId,
+                                     int studentId,
+                                     LocalDate classDate,
+                                     boolean present) throws SQLException {
+        if (classDate == null) {
+            throw new IllegalArgumentException("classDate cannot be null");
+        }
+
+        markWorkingDay(groupId, classDate);
+        String sql = "MERGE INTO attendance_records (group_id, student_id, class_date, status, updated_at) " +
+                     "KEY(group_id, student_id, class_date) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)";
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
+            pstmt.setInt(1, groupId);
+            pstmt.setInt(2, studentId);
+            pstmt.setDate(3, Date.valueOf(classDate));
+            pstmt.setString(4, present ? "Present" : "Absent");
+            pstmt.executeUpdate();
+        }
+    }
+
+    public void saveAttendanceForAll(int groupId,
+                                     List<Integer> studentIds,
+                                     LocalDate classDate,
+                                     boolean present) throws SQLException {
+        if (classDate == null || studentIds == null || studentIds.isEmpty()) {
+            return;
+        }
+
+        markWorkingDay(groupId, classDate);
+        String sql = "MERGE INTO attendance_records (group_id, student_id, class_date, status, updated_at) " +
+                     "KEY(group_id, student_id, class_date) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)";
+
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
+            for (Integer studentId : studentIds) {
+                if (studentId == null) {
+                    continue;
+                }
+                pstmt.setInt(1, groupId);
+                pstmt.setInt(2, studentId);
+                pstmt.setDate(3, Date.valueOf(classDate));
+                pstmt.setString(4, present ? "Present" : "Absent");
+                pstmt.addBatch();
+            }
+            pstmt.executeBatch();
+        }
+    }
+
+    public String getAttendanceStatus(int groupId, int studentId, LocalDate classDate) throws SQLException {
+        String sql = "SELECT status FROM attendance_records WHERE group_id = ? AND student_id = ? AND class_date = ?";
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
+            pstmt.setInt(1, groupId);
+            pstmt.setInt(2, studentId);
+            pstmt.setDate(3, Date.valueOf(classDate));
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("status");
+                }
+            }
+        }
+        return null;
+    }
+
+    public List<AttendanceRecordData> getAttendanceRecordsByGroupAndStudent(int groupId, int studentId) throws SQLException {
+        String sql = "SELECT group_id, student_id, class_date, status FROM attendance_records " +
+                     "WHERE group_id = ? AND student_id = ? ORDER BY class_date";
+        List<AttendanceRecordData> list = new ArrayList<>();
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
+            pstmt.setInt(1, groupId);
+            pstmt.setInt(2, studentId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    list.add(new AttendanceRecordData(
+                        rs.getInt("group_id"),
+                        rs.getInt("student_id"),
+                        rs.getDate("class_date").toLocalDate(),
+                        rs.getString("status")
+                    ));
+                }
+            }
+        }
+        return list;
+    }
+
+    public List<AttendanceRecordData> getAttendanceRecordsByGroupAndDate(int groupId, LocalDate classDate) throws SQLException {
+        String sql = "SELECT group_id, student_id, class_date, status FROM attendance_records " +
+                     "WHERE group_id = ? AND class_date = ? ORDER BY student_id";
+        List<AttendanceRecordData> list = new ArrayList<>();
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
+            pstmt.setInt(1, groupId);
+            pstmt.setDate(2, Date.valueOf(classDate));
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    list.add(new AttendanceRecordData(
+                        rs.getInt("group_id"),
+                        rs.getInt("student_id"),
+                        rs.getDate("class_date").toLocalDate(),
+                        rs.getString("status")
+                    ));
+                }
+            }
+        }
+        return list;
+    }
+
+    // ── Exam persistence ────────────────────────────────────────────────────
+
+    public int addExamResult(int groupId,
+                             int studentId,
+                             String title,
+                             Double score,
+                             double maxScore,
+                             LocalDate examDate) throws SQLException {
+        String sql = "INSERT INTO exam_results (group_id, student_id, title, score, max_score, exam_date, updated_at) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)";
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            pstmt.setInt(1, groupId);
+            pstmt.setInt(2, studentId);
+            pstmt.setString(3, title);
+            if (score == null) {
+                pstmt.setNull(4, java.sql.Types.DOUBLE);
+            } else {
+                pstmt.setDouble(4, score);
+            }
+            pstmt.setDouble(5, maxScore <= 0 ? 100.0 : maxScore);
+            if (examDate == null) {
+                pstmt.setNull(6, java.sql.Types.DATE);
+            } else {
+                pstmt.setDate(6, Date.valueOf(examDate));
+            }
+            pstmt.executeUpdate();
+
+            try (ResultSet rs = pstmt.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+        return -1;
+    }
+
+    public List<ExamResultData> getExamResultsByGroupAndStudent(int groupId, int studentId) throws SQLException {
+        String sql = "SELECT id, group_id, student_id, title, score, max_score, exam_date " +
+                     "FROM exam_results WHERE group_id = ? AND student_id = ? " +
+                     "ORDER BY exam_date NULLS LAST, id";
+        List<ExamResultData> list = new ArrayList<>();
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
+            pstmt.setInt(1, groupId);
+            pstmt.setInt(2, studentId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Date examDate = rs.getDate("exam_date");
+                    list.add(new ExamResultData(
+                        rs.getInt("id"),
+                        rs.getInt("group_id"),
+                        rs.getInt("student_id"),
+                        rs.getString("title"),
+                        rs.getObject("score") != null ? rs.getDouble("score") : null,
+                        rs.getDouble("max_score"),
+                        examDate != null ? examDate.toLocalDate() : null
+                    ));
+                }
+            }
+        }
+        return list;
+    }
+
     public GroupDetailData getGroupById(int groupId) throws SQLException {
         String sql = "SELECT g.id, g.name, g.created_at, t.name as teacher_name, t.email as teacher_email " +
                      "FROM groups g JOIN teachers t ON g.teacher_id = t.id WHERE g.id = ?";
@@ -1096,5 +1372,59 @@ public class DatabaseManager {
         public void setPlagiarized(boolean v)           { plagiarized = v; }
         public void setSimilarityScore(double v)        { similarityScore = v; }
         public void setMatchedSubmissionId(int v)       { matchedSubmissionId = v; }
+    }
+
+    public static class AttendanceRecordData {
+        private final int groupId;
+        private final int studentId;
+        private final LocalDate classDate;
+        private final String status;
+
+        public AttendanceRecordData(int groupId, int studentId, LocalDate classDate, String status) {
+            this.groupId = groupId;
+            this.studentId = studentId;
+            this.classDate = classDate;
+            this.status = status;
+        }
+
+        public int getGroupId() { return groupId; }
+        public int getStudentId() { return studentId; }
+        public LocalDate getClassDate() { return classDate; }
+        public String getStatus() { return status; }
+        public boolean isPresent() { return "Present".equalsIgnoreCase(status); }
+    }
+
+    public static class ExamResultData {
+        private final int id;
+        private final int groupId;
+        private final int studentId;
+        private final String title;
+        private final Double score;
+        private final double maxScore;
+        private final LocalDate examDate;
+
+        public ExamResultData(int id,
+                              int groupId,
+                              int studentId,
+                              String title,
+                              Double score,
+                              double maxScore,
+                              LocalDate examDate) {
+            this.id = id;
+            this.groupId = groupId;
+            this.studentId = studentId;
+            this.title = title;
+            this.score = score;
+            this.maxScore = maxScore;
+            this.examDate = examDate;
+        }
+
+        public int getId() { return id; }
+        public int getGroupId() { return groupId; }
+        public int getStudentId() { return studentId; }
+        public String getTitle() { return title; }
+        public Double getScore() { return score; }
+        public double getMaxScore() { return maxScore; }
+        public LocalDate getExamDate() { return examDate; }
     }
 }
