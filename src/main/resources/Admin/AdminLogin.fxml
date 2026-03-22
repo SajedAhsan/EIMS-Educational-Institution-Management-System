@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.paint.LinearGradient?>
+<?import javafx.scene.paint.Stop?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane minHeight="700" maxHeight="700" minWidth="900" maxWidth="900" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
+    <LinearGradient startX="0" startY="0" endX="1" endY="1">
+        <Stop offset="0" color="#667eea"/>
+        <Stop offset="1" color="#764ba2"/>
+    </LinearGradient>
+    
+    <!-- Main Container -->
+    <VBox layoutX="0" layoutY="0" prefWidth="900" prefHeight="700" spacing="20" style="-fx-background-color: linear-gradient(to bottom, #667eea, #764ba2);" AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+        
+        <!-- Title -->
+        <Label text="Admin Panel" textFill="WHITE">
+            <font>
+                <Font size="32" name="System Bold"/>
+            </font>
+            <VBox.margin>
+                <Insets top="30" left="20"/>
+            </VBox.margin>
+        </Label>
+        
+        <!-- Login Card Container -->
+        <HBox alignment="CENTER" spacing="10" VBox.vgrow="ALWAYS">
+            <VBox alignment="CENTER" spacing="0" style="-fx-background-color: white; -fx-background-radius: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 15, 0, 0, 5);" prefWidth="350" prefHeight="350">
+                
+                <!-- Subtitle -->
+                <Label text="Login" textFill="#667eea">
+                    <font>
+                        <Font size="24" name="System Bold"/>
+                    </font>
+                    <VBox.margin>
+                        <Insets top="30" bottom="20"/>
+                    </VBox.margin>
+                </Label>
+                
+                <!-- Username Field -->
+                <Label text="Username" textFill="#333333">
+                    <font>
+                        <Font size="12"/>
+                    </font>
+                    <VBox.margin>
+                        <Insets left="25" bottom="5"/>
+                    </VBox.margin>
+                </Label>
+                <TextField fx:id="usernameField" style="-fx-font-size: 13; -fx-padding: 10; -fx-border-radius: 5; -fx-border-color: #ddd;" prefWidth="300" promptText="admin">
+                    <VBox.margin>
+                        <Insets left="25" right="25" bottom="15"/>
+                    </VBox.margin>
+                </TextField>
+                
+                <!-- Password Field -->
+                <Label text="Password" textFill="#333333">
+                    <font>
+                        <Font size="12"/>
+                    </font>
+                    <VBox.margin>
+                        <Insets left="25" bottom="5"/>
+                    </VBox.margin>
+                </Label>
+                <PasswordField fx:id="passwordField" style="-fx-font-size: 13; -fx-padding: 10; -fx-border-radius: 5; -fx-border-color: #ddd;" prefWidth="300" promptText="••••••••">
+                    <VBox.margin>
+                        <Insets left="25" right="25" bottom="20"/>
+                    </VBox.margin>
+                </PasswordField>
+                
+                <!-- Error Label -->
+                <Label fx:id="errorLabel" text="" textFill="#e74c3c" wrapText="true" prefWidth="300">
+                    <font>
+                        <Font size="11"/>
+                    </font>
+                    <VBox.margin>
+                        <Insets left="25" right="25" bottom="15"/>
+                    </VBox.margin>
+                </Label>
+                
+                <!-- Login Button -->
+                <Button fx:id="loginButton" text="Login" style="-fx-font-size: 14; -fx-padding: 10 30 10 30; -fx-background-color: #667eea; -fx-text-fill: white; -fx-border-radius: 5; -fx-cursor: hand;" prefWidth="300">
+                    <VBox.margin>
+                        <Insets left="25" right="25" bottom="15"/>
+                    </VBox.margin>
+                </Button>
+                
+                <!-- Back Button -->
+                <Button fx:id="backButton" text="Back to Home" style="-fx-font-size: 12; -fx-padding: 8 20 8 20; -fx-background-color: #ecf0f1; -fx-text-fill: #333333; -fx-border-radius: 5; -fx-cursor: hand;" prefWidth="300">
+                    <VBox.margin>
+                        <Insets left="25" right="25" bottom="30"/>
+                    </VBox.margin>
+                </Button>
+                
+            </VBox>
+        </HBox>
+        
+    </VBox>
+    
+</AnchorPane>

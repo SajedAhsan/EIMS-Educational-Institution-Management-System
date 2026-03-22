@@ -108,4 +108,15 @@ public class AuthenticationService {
         }
         return null;
     }
+    
+    /**
+     * Authenticate an admin user
+     * @param username Admin username
+     * @param password Admin password
+     * @return true if authentication successful, false otherwise
+     */
+    public boolean authenticateAdmin(String username, String password) {
+        // Default admin credentials (can be modified for production)
+        return username.equals("admin") && password.equals("admin123");
+    }
 }

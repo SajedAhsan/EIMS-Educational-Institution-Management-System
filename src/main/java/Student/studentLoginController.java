@@ -58,6 +58,7 @@ public class studentLoginController {
             return;
         }
         
+        // Try student authentication first
         if (authService.authenticateStudent(email, password)) {
             String studentName = authService.getStudentName(email);
             showAlert(AlertType.INFORMATION, "Login Successful", 
@@ -78,7 +79,29 @@ public class studentLoginController {
                 showAlert(AlertType.ERROR, "Navigation Error", 
                          "Failed to load Student Dashboard: " + e.getMessage());
             }
-        } else {
+        } 
+        // Try admin authentication if student auth fails
+        else if (authService.authenticateAdmin(email, password)) {
+            showAlert(AlertType.INFORMATION, "Admin Login Successful", "Welcome, Admin!");
+            
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/Admin/AdminDashboard.fxml"));
+                Parent root = loader.load();
+                
+                Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+                stage.setScene(new Scene(root, 900, 700));
+                stage.setTitle("EIMS - Admin Dashboard");
+                stage.setWidth(900);
+                stage.setHeight(700);
+                stage.setResizable(false);
+                stage.show();
+            } catch (IOException e) {
+                e.printStackTrace();
+                showAlert(AlertType.ERROR, "Navigation Error", 
+                         "Failed to load Admin Dashboard: " + e.getMessage());
+            }
+        } 
+        else {
             showAlert(AlertType.ERROR, "Login Failed", "Invalid email or password");
             studentPass.clear();
         }

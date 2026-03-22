@@ -200,6 +200,18 @@ public class DatabaseManager {
                 stmt.execute(alter);
             }
 
+            // Add extended profile columns to teachers table if they don't exist
+            String[] alterTeacherColumns = {
+                "ALTER TABLE teachers ADD COLUMN IF NOT EXISTS phone_number VARCHAR(50)",
+                "ALTER TABLE teachers ADD COLUMN IF NOT EXISTS department_faculty VARCHAR(255)",
+                "ALTER TABLE teachers ADD COLUMN IF NOT EXISTS years_of_experience INT",
+                "ALTER TABLE teachers ADD COLUMN IF NOT EXISTS highest_degree_qualification VARCHAR(255)",
+                "ALTER TABLE teachers ADD COLUMN IF NOT EXISTS photo_path VARCHAR(500)"
+            };
+            for (String alter : alterTeacherColumns) {
+                stmt.execute(alter);
+            }
+
             System.out.println("Database tables initialized successfully.");
         } catch (SQLException e) {
             e.printStackTrace();
@@ -1025,6 +1037,69 @@ public class DatabaseManager {
         return true;
     }
 
+    // ── Teacher profile ──────────────────────────────────────────────────────
+
+    public TeacherProfileData getTeacherProfile(String email) throws SQLException {
+        String sql = "SELECT name, email, subject, phone_number, department_faculty, " +
+                     "years_of_experience, highest_degree_qualification, photo_path " +
+                     "FROM teachers WHERE email = ?";
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
+            pstmt.setString(1, email);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return new TeacherProfileData(
+                        rs.getString("name"),
+                        rs.getString("email"),
+                        rs.getString("subject"),
+                        rs.getString("phone_number"),
+                        rs.getString("department_faculty"),
+                        rs.getInt("years_of_experience"),
+                        rs.getString("highest_degree_qualification"),
+                        rs.getString("photo_path")
+                    );
+                }
+            }
+        }
+        return null;
+    }
+
+    public void updateTeacherProfile(String email, TeacherProfileData p) throws SQLException {
+        String sql = "UPDATE teachers SET name=?, subject=?, phone_number=?, department_faculty=?, " +
+                     "years_of_experience=?, highest_degree_qualification=?, photo_path=? WHERE email=?";
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
+            pstmt.setString(1,  p.getName());
+            pstmt.setString(2,  p.getSubject());
+            pstmt.setString(3,  p.getPhoneNumber());
+            pstmt.setString(4,  p.getDepartmentFaculty());
+            pstmt.setInt(5,     p.getYearsOfExperience());
+            pstmt.setString(6,  p.getHighestDegreeQualification());
+            pstmt.setString(7,  p.getPhotoPath());
+            pstmt.setString(8,  email);
+            pstmt.executeUpdate();
+        }
+    }
+
+    /**
+     * @return true if the old password matched and the update succeeded.
+     */
+    public boolean updateTeacherPassword(String email, String oldPassword, String newPassword) throws SQLException {
+        String check = "SELECT id FROM teachers WHERE email=? AND password=?";
+        try (PreparedStatement ps = getConnection().prepareStatement(check)) {
+            ps.setString(1, email);
+            ps.setString(2, oldPassword);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) return false;
+            }
+        }
+        String update = "UPDATE teachers SET password=? WHERE email=?";
+        try (PreparedStatement ps = getConnection().prepareStatement(update)) {
+            ps.setString(1, newPassword);
+            ps.setString(2, email);
+            ps.executeUpdate();
+        }
+        return true;
+    }
+
     // ── Notification methods ──────────────────────────────────────────────────
 
     public void createNotification(int userId, String userType, String message) throws SQLException {
@@ -1113,6 +1188,148 @@ public class DatabaseManager {
                 }
             }
         }
+    }
+
+    // ── Admin methods for managing students and teachers ─────────────────────
+    
+    /**
+     * Add a new student to the database
+     */
+    public int addStudent(String email, String password, String name) throws SQLException {
+        String sql = "INSERT INTO students (email, password, name) VALUES (?, ?, ?)";
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            pstmt.setString(1, email);
+            pstmt.setString(2, password);
+            pstmt.setString(3, name);
+            pstmt.executeUpdate();
+            
+            ResultSet rs = pstmt.getGeneratedKeys();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        }
+        return -1;
+    }
+    
+    /**
+     * Delete a student from the database by ID
+     */
+    public boolean deleteStudent(int studentId) throws SQLException {
+        // First delete related records
+        try (Statement stmt = getConnection().createStatement()) {
+            stmt.execute("DELETE FROM submissions WHERE student_id = " + studentId);
+            stmt.execute("DELETE FROM attendance_records WHERE student_id = " + studentId);
+            stmt.execute("DELETE FROM group_members WHERE student_id = " + studentId);
+            stmt.execute("DELETE FROM exam_results WHERE student_id = " + studentId);
+        }
+        
+        // Then delete the student
+        String sql = "DELETE FROM students WHERE id = ?";
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
+            pstmt.setInt(1, studentId);
+            int result = pstmt.executeUpdate();
+            return result > 0;
+        }
+    }
+    
+    /**
+     * Add a new teacher to the database
+     */
+    public int addTeacher(String email, String password, String name, String subject) throws SQLException {
+        String sql = "INSERT INTO teachers (email, password, name, subject) VALUES (?, ?, ?, ?)";
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            pstmt.setString(1, email);
+            pstmt.setString(2, password);
+            pstmt.setString(3, name);
+            pstmt.setString(4, subject);
+            pstmt.executeUpdate();
+            
+            ResultSet rs = pstmt.getGeneratedKeys();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        }
+        return -1;
+    }
+    
+    /**
+     * Delete a teacher from the database by ID
+     */
+    public boolean deleteTeacher(int teacherId) throws SQLException {
+        // First get all groups for this teacher
+        List<Integer> groupIds = new ArrayList<>();
+        String getGroups = "SELECT id FROM groups WHERE teacher_id = ?";
+        try (PreparedStatement pstmt = getConnection().prepareStatement(getGroups)) {
+            pstmt.setInt(1, teacherId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    groupIds.add(rs.getInt("id"));
+                }
+            }
+        }
+        
+        // Delete all records related to these groups
+        try (Statement stmt = getConnection().createStatement()) {
+            for (int groupId : groupIds) {
+                stmt.execute("DELETE FROM submissions WHERE asset_id IN " +
+                           "(SELECT id FROM educational_assets WHERE group_id = " + groupId + ")");
+                stmt.execute("DELETE FROM attendance_records WHERE group_id = " + groupId);
+                stmt.execute("DELETE FROM exam_results WHERE group_id = " + groupId);
+                stmt.execute("DELETE FROM group_members WHERE group_id = " + groupId);
+                stmt.execute("DELETE FROM educational_assets WHERE group_id = " + groupId);
+            }
+            // Delete all groups for this teacher
+            stmt.execute("DELETE FROM groups WHERE teacher_id = " + teacherId);
+        }
+        
+        // Finally delete the teacher
+        String sql = "DELETE FROM teachers WHERE id = ?";
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
+            pstmt.setInt(1, teacherId);
+            int result = pstmt.executeUpdate();
+            return result > 0;
+        }
+    }
+    
+    /**
+     * Get all students from the database
+     */
+    public List<StudentData> getAllStudents() throws SQLException {
+        String sql = "SELECT id, email, name FROM students ORDER BY name";
+        List<StudentData> students = new ArrayList<>();
+        
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                students.add(new StudentData(
+                    rs.getInt("id"),
+                    rs.getString("email"),
+                    rs.getString("name")
+                ));
+            }
+        }
+        return students;
+    }
+    
+    /**
+     * Get all teachers from the database
+     */
+    public List<TeacherBasicData> getAllTeachers() throws SQLException {
+        String sql = "SELECT id, email, name, subject FROM teachers ORDER BY name";
+        List<TeacherBasicData> teachers = new ArrayList<>();
+        
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                teachers.add(new TeacherBasicData(
+                    rs.getInt("id"),
+                    rs.getString("email"),
+                    rs.getString("name"),
+                    rs.getString("subject")
+                ));
+            }
+        }
+        return teachers;
     }
 
     public void closeConnection() {
@@ -1282,6 +1499,43 @@ public class DatabaseManager {
         public void setPhotoPath(String v)         { photoPath = v; }
     }
 
+    // ── TeacherProfileData ────────────────────────────────────────────────────
+    public static class TeacherProfileData {
+        private String name, email, subject, phoneNumber, departmentFaculty;
+        private int yearsOfExperience;
+        private String highestDegreeQualification, photoPath;
+
+        public TeacherProfileData(String name, String email, String subject, String phoneNumber,
+                                   String departmentFaculty, int yearsOfExperience,
+                                   String highestDegreeQualification, String photoPath) {
+            this.name = name;
+            this.email = email;
+            this.subject = subject;
+            this.phoneNumber = phoneNumber;
+            this.departmentFaculty = departmentFaculty;
+            this.yearsOfExperience = yearsOfExperience;
+            this.highestDegreeQualification = highestDegreeQualification;
+            this.photoPath = photoPath;
+        }
+
+        public String getName()                      { return name; }
+        public String getEmail()                     { return email; }
+        public String getSubject()                   { return subject; }
+        public String getPhoneNumber()               { return phoneNumber; }
+        public String getDepartmentFaculty()         { return departmentFaculty; }
+        public int getYearsOfExperience()            { return yearsOfExperience; }
+        public String getHighestDegreeQualification() { return highestDegreeQualification; }
+        public String getPhotoPath()                 { return photoPath; }
+
+        public void setName(String v)                           { name = v; }
+        public void setSubject(String v)                        { subject = v; }
+        public void setPhoneNumber(String v)                    { phoneNumber = v; }
+        public void setDepartmentFaculty(String v)              { departmentFaculty = v; }
+        public void setYearsOfExperience(int v)                 { yearsOfExperience = v; }
+        public void setHighestDegreeQualification(String v)     { highestDegreeQualification = v; }
+        public void setPhotoPath(String v)                      { photoPath = v; }
+    }
+
     public static class NotificationData {
         private final int id;
         private final int userId;
@@ -1426,5 +1680,24 @@ public class DatabaseManager {
         public Double getScore() { return score; }
         public double getMaxScore() { return maxScore; }
         public LocalDate getExamDate() { return examDate; }
+    }
+
+    public static class TeacherBasicData {
+        private int id;
+        private String email;
+        private String name;
+        private String subject;
+        
+        public TeacherBasicData(int id, String email, String name, String subject) {
+            this.id = id;
+            this.email = email;
+            this.name = name;
+            this.subject = subject;
+        }
+        
+        public int getId() { return id; }
+        public String getEmail() { return email; }
+        public String getName() { return name; }
+        public String getSubject() { return subject; }
     }
 }

@@ -17,7 +17,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane prefHeight="760.0" prefWidth="1220.0" style="-fx-background-color: #f4f7fb;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Student.StudentProgressTrackerController">
+<BorderPane prefHeight="700.0" prefWidth="900.0" minHeight="700.0" minWidth="900.0" maxHeight="700.0" maxWidth="900.0" style="-fx-background-color: #f4f7fb;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Student.StudentProgressTrackerController">
 
    <!-- ── Top header ───────────────────────────────────────────────────── -->
    <top>
@@ -56,14 +56,14 @@
       <ScrollPane fitToWidth="true" hbarPolicy="NEVER"
                   style="-fx-background: transparent; -fx-background-color: transparent;">
          <content>
-            <VBox spacing="14.0">
-               <padding><Insets bottom="18.0" left="18.0" right="18.0" top="18.0" /></padding>
+            <VBox spacing="12.0">
+               <padding><Insets bottom="12.0" left="12.0" right="12.0" top="12.0" /></padding>
                <children>
 
                   <!-- Course title -->
                   <Label fx:id="selectedCourseLabel" text="Select a course from the left →"
                          textFill="#0f172a">
-                     <font><Font name="System Bold" size="18.0" /></font>
+                     <font><Font name="System Bold" size="14.0" /></font>
                   </Label>
 
                   <Separator />
@@ -71,10 +71,10 @@
                   <!-- ── Attendance card ─────────────────────────────────── -->
                   <VBox spacing="8.0"
                         style="-fx-background-color: #ffffff; -fx-border-color: #d7deea; -fx-border-radius: 8; -fx-background-radius: 8;">
-                     <padding><Insets bottom="14.0" left="14.0" right="14.0" top="14.0" /></padding>
+                     <padding><Insets bottom="10.0" left="10.0" right="10.0" top="10.0" /></padding>
                      <children>
                         <Label text="📅  Attendance" textFill="#1e3a5f">
-                           <font><Font name="System Bold" size="15.0" /></font>
+                           <font><Font name="System Bold" size="12.0" /></font>
                         </Label>
 
                         <!-- shown when teacher has not yet marked any attendance -->
@@ -88,19 +88,19 @@
                               textFill="#dc2626" style="-fx-font-weight: bold;" wrapText="true" />
 
                         <!-- Pie chart: green = present, red = absent (colours applied in code) -->
-                        <HBox alignment="CENTER_LEFT" spacing="16.0">
+                        <HBox alignment="CENTER_LEFT" spacing="10.0">
                            <children>
                               <PieChart fx:id="attendancePieChart" legendVisible="false"
-                                        prefHeight="250.0" prefWidth="460.0" />
+                                        prefHeight="160.0" prefWidth="160.0" />
                               <VBox spacing="8.0"
                                     style="-fx-background-color: #f8fafc; -fx-border-color: #d7deea; -fx-border-radius: 8; -fx-background-radius: 8;">
-                                 <padding><Insets bottom="10.0" left="10.0" right="10.0" top="10.0" /></padding>
+                                 <padding><Insets bottom="8.0" left="8.0" right="8.0" top="8.0" /></padding>
                                  <children>
                                     <Label text="Legend" textFill="#1f2937">
-                                       <font><Font name="System Bold" size="13.0" /></font>
+                                       <font><Font name="System Bold" size="11.0" /></font>
                                     </Label>
-                                    <Label text="🟢 Green = Present %" textFill="#166534" />
-                                    <Label text="🔴 Red = Absent %" textFill="#991b1b" />
+                                    <Label text="🟢 Green = Present %" textFill="#166534" style="-fx-font-size: 10;" />
+                                    <Label text="🔴 Red = Absent %" textFill="#991b1b" style="-fx-font-size: 10;" />
                                  </children>
                               </VBox>
                            </children>
@@ -111,10 +111,10 @@
                   <!-- ── Assignments card ────────────────────────────────── -->
                   <VBox spacing="8.0"
                         style="-fx-background-color: #ffffff; -fx-border-color: #d7deea; -fx-border-radius: 8; -fx-background-radius: 8;">
-                     <padding><Insets bottom="14.0" left="14.0" right="14.0" top="14.0" /></padding>
+                     <padding><Insets bottom="10.0" left="10.0" right="10.0" top="10.0" /></padding>
                      <children>
                         <Label text="📝  Assignments" textFill="#1e3a5f">
-                           <font><Font name="System Bold" size="15.0" /></font>
+                           <font><Font name="System Bold" size="12.0" /></font>
                         </Label>
 
                         <Label fx:id="noAssignmentsLabel"
@@ -125,19 +125,19 @@
 
                         <TableView fx:id="assignmentsTable" prefHeight="160.0">
                            <columns>
-                              <TableColumn fx:id="colAssignmentTitle"  prefWidth="250.0" text="Assignment Name" />
-                              <TableColumn fx:id="colAssignmentStatus" prefWidth="170.0" text="Status" />
-                              <TableColumn fx:id="colAssignmentScore"  prefWidth="110.0" text="Score" />
+                              <TableColumn fx:id="colAssignmentTitle"  prefWidth="200.0" text="Assignment Name" />
+                              <TableColumn fx:id="colAssignmentStatus" prefWidth="110.0" text="Status" />
+                              <TableColumn fx:id="colAssignmentScore"  prefWidth="70.0" text="Score" />
                            </columns>
                         </TableView>
 
-                        <BarChart fx:id="assignmentScoreBarChart" prefHeight="210.0" animated="true">
+                        <BarChart fx:id="assignmentScoreBarChart" prefHeight="160.0" animated="true">
                            <xAxis><CategoryAxis label="Assignments" /></xAxis>
                            <yAxis><NumberAxis label="Score (0–100)" lowerBound="0.0" upperBound="100.0" tickUnit="10.0" /></yAxis>
                         </BarChart>
 
                         <Label fx:id="assignmentAverageLabel" text="Average Score: --" textFill="#1f2937">
-                           <font><Font name="System Bold" size="13.0" /></font>
+                           <font><Font name="System Bold" size="11.0" /></font>
                         </Label>
 
                         <VBox fx:id="assignmentColorLegendBox" spacing="5.0"
@@ -159,10 +159,10 @@
                   <!-- ── Exams / Quizzes card ────────────────────────────── -->
                   <VBox spacing="8.0"
                         style="-fx-background-color: #ffffff; -fx-border-color: #d7deea; -fx-border-radius: 8; -fx-background-radius: 8;">
-                     <padding><Insets bottom="14.0" left="14.0" right="14.0" top="14.0" /></padding>
+                     <padding><Insets bottom="10.0" left="10.0" right="10.0" top="10.0" /></padding>
                      <children>
                         <Label text="📊  Exams / Quizzes" textFill="#1e3a5f">
-                           <font><Font name="System Bold" size="15.0" /></font>
+                           <font><Font name="System Bold" size="12.0" /></font>
                         </Label>
 
                         <Label fx:id="noExamsLabel"
@@ -173,13 +173,13 @@
 
                         <TableView fx:id="examsTable" prefHeight="135.0">
                            <columns>
-                              <TableColumn fx:id="colExamTitle"    prefWidth="220.0" text="Exam / Quiz" />
-                              <TableColumn fx:id="colExamScore"    prefWidth="90.0"  text="Score" />
-                              <TableColumn fx:id="colExamMaxScore" prefWidth="90.0"  text="Max Score" />
+                              <TableColumn fx:id="colExamTitle"    prefWidth="170.0" text="Exam / Quiz" />
+                              <TableColumn fx:id="colExamScore"    prefWidth="80.0"  text="Score" />
+                              <TableColumn fx:id="colExamMaxScore" prefWidth="80.0"  text="Max Score" />
                            </columns>
                         </TableView>
 
-                        <BarChart fx:id="examScoreBarChart" prefHeight="210.0" animated="true">
+                        <BarChart fx:id="examScoreBarChart" prefHeight="160.0" animated="true">
                            <xAxis><CategoryAxis label="Exams" /></xAxis>
                            <yAxis><NumberAxis label="Score (0-100)" lowerBound="0.0" upperBound="100.0" tickUnit="10.0" /></yAxis>
                         </BarChart>

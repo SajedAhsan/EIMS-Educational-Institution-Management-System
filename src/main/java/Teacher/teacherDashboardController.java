@@ -85,7 +85,20 @@ public class teacherDashboardController {
 
     @FXML
     void handleProfileButton(ActionEvent event) {
-        showAlert(AlertType.INFORMATION, "Profile", "Profile feature coming soon!");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("TeacherProfile.fxml"));
+            Parent root = loader.load();
+            
+            TeacherProfileController controller = loader.getController();
+            controller.setTeacherEmail(teacherEmail);
+            
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert(AlertType.ERROR, "Navigation Error", "Failed to load profile: " + e.getMessage());
+        }
     }
     
     @FXML

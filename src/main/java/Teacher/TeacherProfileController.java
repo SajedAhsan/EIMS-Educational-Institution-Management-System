@@ -1,7 +1,7 @@
-package Student;
+package Teacher;
 
 import database.DatabaseManager;
-import database.DatabaseManager.StudentProfileData;
+import database.DatabaseManager.TeacherProfileData;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -17,7 +17,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -34,37 +33,30 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 
-public class StudentProfileController {
+public class TeacherProfileController {
 
     // ── Profile labels ─────────────────────────────────────────────────────
     @FXML private Label labelName;
     @FXML private Label labelEmail;
-    @FXML private Label labelStudentNo;
-    @FXML private Label labelLevelTerm;
-    @FXML private Label labelMobileNumber;
-    @FXML private Label labelBankAccount;
-    @FXML private Label labelPhoneNumber;
-    @FXML private Label labelMobileBanking;
-    @FXML private Label labelPresentAddress;
-    @FXML private Label labelPermanentAddress;
-    @FXML private Label labelContactPerson;
-    @FXML private Label labelBirthRegNo;
-    @FXML private Label labelBirthDate;
-    @FXML private Label labelNid;
-    @FXML private Label labelNameBangla;
+    @FXML private Label labelRole;
+    @FXML private Label labelDepartment;
+    @FXML private Label labelSubjects;
+    @FXML private Label labelContact;
+    @FXML private Label labelYearsExperience;
+    @FXML private Label labelQualification;
 
     // ── Photo ──────────────────────────────────────────────────────────────
     @FXML private ImageView photoView;
     @FXML private Label     photoLabel;
 
-    private String studentEmail;
-    private StudentProfileData profileData;
+    private String teacherEmail;
+    private TeacherProfileData profileData;
     private final DatabaseManager db = DatabaseManager.getInstance();
 
     // ── Public API ─────────────────────────────────────────────────────────
 
-    public void setStudentEmail(String email) {
-        this.studentEmail = email;
+    public void setTeacherEmail(String email) {
+        this.teacherEmail = email;
         loadProfile();
     }
 
@@ -72,7 +64,7 @@ public class StudentProfileController {
 
     private void loadProfile() {
         try {
-            profileData = db.getStudentProfile(studentEmail);
+            profileData = db.getTeacherProfile(teacherEmail);
         } catch (SQLException e) {
             e.printStackTrace();
             showAlert(AlertType.ERROR, "Database Error", "Could not load profile: " + e.getMessage());
@@ -87,22 +79,16 @@ public class StudentProfileController {
         displayProfile(profileData);
     }
 
-    private void displayProfile(StudentProfileData p) {
+    private void displayProfile(TeacherProfileData p) {
         labelName.setText(orDummy(p.getName(), "Dummy Name"));
         labelEmail.setText(orDummy(p.getEmail(), "Dummy X"));
-        labelStudentNo.setText(orDummy(p.getStudentNo(), "Dummy X"));
-        labelLevelTerm.setText(orDummy(p.getLevelTerm(), "Dummy X"));
-        labelMobileNumber.setText(orDummy(p.getMobileNumber(), "Dummy X"));
-        labelBankAccount.setText(orDummy(p.getBankAccount(), "Dummy X"));
-        labelPhoneNumber.setText(orDummy(p.getPhoneNumber(), "Dummy X"));
-        labelMobileBanking.setText(orDummy(p.getMobileBanking(), "Dummy X"));
-        labelPresentAddress.setText(orDummy(p.getPresentAddress(), "Dummy X"));
-        labelPermanentAddress.setText(orDummy(p.getPermanentAddress(), "Dummy X"));
-        labelContactPerson.setText(orDummy(p.getContactPerson(), "Dummy X"));
-        labelBirthRegNo.setText(orDummy(p.getBirthRegNo(), "Dummy X"));
-        labelBirthDate.setText(orDummy(p.getBirthDate(), "Dummy X"));
-        labelNid.setText(orDummy(p.getNid(), "Dummy X"));
-        labelNameBangla.setText(orDummy(p.getNameBangla(), "Dummy X"));
+        labelRole.setText(orDummy(p.getSubject(), "Dummy X"));
+        labelDepartment.setText(orDummy(p.getDepartmentFaculty(), "Dummy X"));
+        labelSubjects.setText(orDummy(p.getSubject(), "Dummy X"));
+        labelContact.setText(orDummy(p.getPhoneNumber(), "Dummy X"));
+        labelYearsExperience.setText(p.getYearsOfExperience() > 0 
+            ? String.valueOf(p.getYearsOfExperience()) : "Dummy X");
+        labelQualification.setText(orDummy(p.getHighestDegreeQualification(), "Dummy X"));
 
         // Load saved photo if present
         String path = p.getPhotoPath();
@@ -142,7 +128,7 @@ public class StudentProfileController {
         if (profileData != null) {
             profileData.setPhotoPath(file.getAbsolutePath());
             try {
-                db.updateStudentProfile(studentEmail, profileData);
+                db.updateTeacherProfile(teacherEmail, profileData);
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -154,10 +140,10 @@ public class StudentProfileController {
     @FXML
     void handleBack(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("StudentDashboard.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("TeacherDashboard.fxml"));
             Parent root = loader.load();
-            studentDashboardController ctrl = loader.getController();
-            ctrl.setStudentEmail(studentEmail);
+            teacherDashboardController ctrl = loader.getController();
+            ctrl.setTeacherEmail(teacherEmail);
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.show();
@@ -178,41 +164,29 @@ public class StudentProfileController {
         grid.setHgap(10);
         grid.setVgap(10);
         grid.setPadding(new Insets(20));
-        ColumnConstraints labelCol = new ColumnConstraints(180);
+        ColumnConstraints labelCol = new ColumnConstraints(200);
         ColumnConstraints fieldCol = new ColumnConstraints(300);
         grid.getColumnConstraints().addAll(labelCol, fieldCol);
 
         // Field helper
-        TextField fName          = makeField(profileData.getName());
-        TextField fStudentNo     = makeField(profileData.getStudentNo());
-        TextField fLevelTerm     = makeField(profileData.getLevelTerm());
-        TextField fMobileNumber  = makeField(profileData.getMobileNumber());
-        TextField fBankAccount   = makeField(profileData.getBankAccount());
-        TextField fPhoneNumber   = makeField(profileData.getPhoneNumber());
-        TextField fMobileBanking = makeField(profileData.getMobileBanking());
-        TextArea  fPresentAddr   = makeArea(profileData.getPresentAddress());
-        TextArea  fPermanentAddr = makeArea(profileData.getPermanentAddress());
-        TextArea  fContactPerson = makeArea(profileData.getContactPerson());
-        TextField fBirthRegNo    = makeField(profileData.getBirthRegNo());
-        TextField fBirthDate     = makeField(profileData.getBirthDate());
-        TextField fNid           = makeField(profileData.getNid());
-        TextField fNameBangla    = makeField(profileData.getNameBangla());
+        TextField fName              = makeField(profileData.getName());
+        TextField fEmail             = makeField(profileData.getEmail());
+        fEmail.setDisable(true);  // Email should not be editable
+        TextField fSubject           = makeField(profileData.getSubject());
+        TextField fPhoneNumber       = makeField(profileData.getPhoneNumber());
+        TextField fDepartment        = makeField(profileData.getDepartmentFaculty());
+        TextField fYearsExperience   = makeField(String.valueOf(profileData.getYearsOfExperience()));
+        TextField fQualification     = makeField(profileData.getHighestDegreeQualification());
 
         Object[][] rows = {
-            {"Name",                              fName},
-            {"Student No",                        fStudentNo},
-            {"Level/Term",                        fLevelTerm},
-            {"Mobile Number",                     fMobileNumber},
-            {"Bank Account Number",               fBankAccount},
-            {"Phone Number",                      fPhoneNumber},
-            {"Mobile Banking Account",            fMobileBanking},
-            {"Present/Residential Address",       fPresentAddr},
-            {"Permanent Address",                 fPermanentAddr},
-            {"Contact Person (Name/Address/No.)", fContactPerson},
-            {"Birth Registration No",             fBirthRegNo},
-            {"Birth Date (e.g. 01-01-2000)",      fBirthDate},
-            {"NID",                               fNid},
-            {"Name (Bangla)",                     fNameBangla}
+            {"Full Name",                        fName},
+            {"Email Address",                    fEmail},
+            {"Role / Position",                  fSubject},
+            {"Department / Faculty",             fDepartment},
+            {"Subjects / Courses Taught",        fSubject},
+            {"Contact Information",              fPhoneNumber},
+            {"Years of Experience",              fYearsExperience},
+            {"Highest Degree / Qualification",   fQualification}
         };
 
         for (int i = 0; i < rows.length; i++) {
@@ -222,7 +196,7 @@ public class StudentProfileController {
 
         ScrollPane scroll = new ScrollPane(grid);
         scroll.setFitToWidth(true);
-        scroll.setPrefHeight(460);
+        scroll.setPrefHeight(360);
 
         Button btnSave   = new Button("Save Changes");
         Button btnCancel = new Button("Cancel");
@@ -237,32 +211,29 @@ public class StudentProfileController {
 
         Stage dialog = new Stage();
         dialog.initModality(Modality.APPLICATION_MODAL);
-        dialog.setTitle("Edit Contact Information");
+        dialog.setTitle("Edit Profile");
         dialog.setScene(new Scene(root));
         dialog.setResizable(false);
 
         btnCancel.setOnAction(e -> dialog.close());
         btnSave.setOnAction(e -> {
             profileData.setName(fName.getText().trim());
-            profileData.setStudentNo(fStudentNo.getText().trim());
-            profileData.setLevelTerm(fLevelTerm.getText().trim());
-            profileData.setMobileNumber(fMobileNumber.getText().trim());
-            profileData.setBankAccount(fBankAccount.getText().trim());
+            profileData.setSubject(fSubject.getText().trim());
             profileData.setPhoneNumber(fPhoneNumber.getText().trim());
-            profileData.setMobileBanking(fMobileBanking.getText().trim());
-            profileData.setPresentAddress(fPresentAddr.getText().trim());
-            profileData.setPermanentAddress(fPermanentAddr.getText().trim());
-            profileData.setContactPerson(fContactPerson.getText().trim());
-            profileData.setBirthRegNo(fBirthRegNo.getText().trim());
-            profileData.setBirthDate(fBirthDate.getText().trim());
-            profileData.setNid(fNid.getText().trim());
-            profileData.setNameBangla(fNameBangla.getText().trim());
+            profileData.setDepartmentFaculty(fDepartment.getText().trim());
+            try {
+                int years = Integer.parseInt(fYearsExperience.getText().trim());
+                profileData.setYearsOfExperience(years);
+            } catch (NumberFormatException ex) {
+                profileData.setYearsOfExperience(0);
+            }
+            profileData.setHighestDegreeQualification(fQualification.getText().trim());
 
             try {
-                db.updateStudentProfile(studentEmail, profileData);
+                db.updateTeacherProfile(teacherEmail, profileData);
                 displayProfile(profileData);
                 dialog.close();
-                showAlert(AlertType.INFORMATION, "Success", "Information saved");
+                showAlert(AlertType.INFORMATION, "Success", "Profile information saved");
             } catch (SQLException ex) {
                 ex.printStackTrace();
                 showAlert(AlertType.ERROR, "Save Failed", "Could not save profile: " + ex.getMessage());
@@ -331,7 +302,7 @@ public class StudentProfileController {
                 return;
             }
             try {
-                boolean ok = db.updateStudentPassword(studentEmail, oldPwd, newPwd);
+                boolean ok = db.updateTeacherPassword(teacherEmail, oldPwd, newPwd);
                 if (ok) {
                     dialog.close();
                     showAlert(AlertType.INFORMATION, "Success", "Password changed successfully.");
@@ -353,14 +324,6 @@ public class StudentProfileController {
         TextField tf = new TextField(value != null ? value : "");
         tf.setPrefWidth(300);
         return tf;
-    }
-
-    private static TextArea makeArea(String value) {
-        TextArea ta = new TextArea(value != null ? value : "");
-        ta.setPrefRowCount(2);
-        ta.setWrapText(true);
-        ta.setPrefWidth(300);
-        return ta;
     }
 
     private void showAlert(AlertType type, String title, String message) {

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane minHeight="700" maxHeight="700" minWidth="900" maxWidth="900" style="-fx-background-color: linear-gradient(to bottom, #667eea, #764ba2);" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="Admin.AdminDashboardController">
+    <!-- Main Container -->
+    <VBox spacing="0" AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+        
+        <!-- Header -->
+        <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-background-color: linear-gradient(to right, #667eea, #764ba2);" prefHeight="60">
+            <Label text="Admin Dashboard" textFill="WHITE">
+                <font>
+                    <Font size="24" name="System Bold"/>
+                </font>
+                <HBox.margin>
+                    <Insets left="20"/>
+                </HBox.margin>
+            </Label>
+            <HBox HBox.hgrow="ALWAYS"/>
+            <Button fx:id="logoutButton" text="Logout" style="-fx-font-size: 12; -fx-padding: 8 20 8 20; -fx-background-color: #e74c3c; -fx-text-fill: white; -fx-border-radius: 5; -fx-cursor: hand;">
+                <HBox.margin>
+                    <Insets right="20"/>
+                </HBox.margin>
+            </Button>
+        </HBox>
+        
+        <!-- Tab Pane -->
+        <TabPane tabClosingPolicy="UNAVAILABLE" style="-fx-font-size: 12;" VBox.vgrow="ALWAYS">
+            
+            <!-- Students Tab -->
+            <Tab text="Manage Students">
+                <VBox spacing="10" style="-fx-padding: 15;">
+                    
+                    <!-- Control Buttons -->
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Button fx:id="addStudentButton" text="+ Add Student" style="-fx-font-size: 12; -fx-padding: 8 15 8 15; -fx-background-color: #27ae60; -fx-text-fill: white; -fx-border-radius: 5; -fx-cursor: hand;"/>
+                        <Button fx:id="deleteStudentButton" text="Delete Selected" style="-fx-font-size: 12; -fx-padding: 8 15 8 15; -fx-background-color: #e74c3c; -fx-text-fill: white; -fx-border-radius: 5; -fx-cursor: hand;"/>
+                        <Button fx:id="refreshStudentsButton" text="Refresh" style="-fx-font-size: 12; -fx-padding: 8 15 8 15; -fx-background-color: #3498db; -fx-text-fill: white; -fx-border-radius: 5; -fx-cursor: hand;"/>
+                    </HBox>
+                    
+                    <!-- Students Table -->
+                    <TableView fx:id="studentsTable" prefHeight="550" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="studentIdColumn" text="ID" prefWidth="50"/>
+                            <TableColumn fx:id="studentNameColumn" text="Name" prefWidth="200"/>
+                            <TableColumn fx:id="studentEmailColumn" text="Email" prefWidth="250"/>
+                        </columns>
+                    </TableView>
+                    
+                </VBox>
+            </Tab>
+            
+            <!-- Teachers Tab -->
+            <Tab text="Manage Teachers">
+                <VBox spacing="10" style="-fx-padding: 15;">
+                    
+                    <!-- Control Buttons -->
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Button fx:id="addTeacherButton" text="+ Add Teacher" style="-fx-font-size: 12; -fx-padding: 8 15 8 15; -fx-background-color: #27ae60; -fx-text-fill: white; -fx-border-radius: 5; -fx-cursor: hand;"/>
+                        <Button fx:id="deleteTeacherButton" text="Delete Selected" style="-fx-font-size: 12; -fx-padding: 8 15 8 15; -fx-background-color: #e74c3c; -fx-text-fill: white; -fx-border-radius: 5; -fx-cursor: hand;"/>
+                        <Button fx:id="refreshTeachersButton" text="Refresh" style="-fx-font-size: 12; -fx-padding: 8 15 8 15; -fx-background-color: #3498db; -fx-text-fill: white; -fx-border-radius: 5; -fx-cursor: hand;"/>
+                    </HBox>
+                    
+                    <!-- Teachers Table -->
+                    <TableView fx:id="teachersTable" prefHeight="550" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="teacherIdColumn" text="ID" prefWidth="50"/>
+                            <TableColumn fx:id="teacherNameColumn" text="Name" prefWidth="180"/>
+                            <TableColumn fx:id="teacherEmailColumn" text="Email" prefWidth="250"/>
+                            <TableColumn fx:id="teacherSubjectColumn" text="Subject" prefWidth="150"/>
+                        </columns>
+                    </TableView>
+                    
+                </VBox>
+            </Tab>
+            
+        </TabPane>
+        
+    </VBox>
+    
+</AnchorPane>
