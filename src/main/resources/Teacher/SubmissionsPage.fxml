@@ -58,7 +58,7 @@
                   <ComboBox fx:id="submissionsFilterCombo" prefWidth="180.0" />
                </children>
             </HBox>
-            <TableView fx:id="submissionsTable" prefHeight="520.0" prefWidth="860.0" VBox.vgrow="ALWAYS">
+            <TableView fx:id="submissionsTable" VBox.vgrow="ALWAYS">
                <columns>
                   <TableColumn fx:id="colStudentName" prefWidth="130.0" text="Student Name" />
                   <TableColumn fx:id="colAssignmentName" prefWidth="185.0" text="Assignment Title" />
@@ -87,7 +87,7 @@
 
             <Label fx:id="performanceAssignmentHintLabel" textFill="#64748b" wrapText="true" />
 
-            <BarChart fx:id="performanceDistributionBarChart" animated="false" prefHeight="230.0">
+            <BarChart fx:id="performanceDistributionBarChart" animated="false" VBox.vgrow="ALWAYS">
                <xAxis>
                   <CategoryAxis label="Score Range" />
                </xAxis>
@@ -99,7 +99,7 @@
             <Label fx:id="performanceStatsLabel" textFill="#334155" />
          </children>
       </VBox>
-      <VBox spacing="10.0" prefWidth="150.0">
+      <VBox spacing="10.0" minWidth="100.0">
          <children>
             <Button onAction="#handleDownloadSubmission" prefHeight="36.0" style="-fx-background-color: #0891b2; -fx-text-fill: white; -fx-font-weight: bold;" text="Download" />
             <Button onAction="#handleEvaluateSubmission" prefHeight="36.0" style="-fx-background-color: #ea580c; -fx-text-fill: white; -fx-font-weight: bold;" text="Evaluate" />

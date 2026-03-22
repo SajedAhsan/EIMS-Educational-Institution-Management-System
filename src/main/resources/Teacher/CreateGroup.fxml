@@ -46,8 +46,8 @@
             
             <!-- Add/Remove Buttons -->
             <VBox spacing="10" alignment="CENTER">
-                <Button fx:id="addButton" onAction="#handleAddStudent" text="→" style="-fx-font-size: 16px; -fx-padding: 15 20 15 20; -fx-background-color: #28a745; -fx-text-fill: white; -fx-background-radius: 8;" prefHeight="45" prefWidth="45"/>
-                <Button fx:id="removeButton" onAction="#handleRemoveStudent" text="←" style="-fx-font-size: 16px; -fx-padding: 15 20 15 20; -fx-background-color: #dc3545; -fx-text-fill: white; -fx-background-radius: 8;" prefHeight="45" prefWidth="45"/>
+                <Button fx:id="addButton" onAction="#handleAddStudent" text="Add" style="-fx-font-size: 13px; -fx-padding: 10 15 10 15; -fx-background-color: #28a745; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-weight: bold;" prefHeight="40" prefWidth="65"/>
+                <Button fx:id="removeButton" onAction="#handleRemoveStudent" text="Remove" style="-fx-font-size: 13px; -fx-padding: 10 15 10 15; -fx-background-color: #dc3545; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-weight: bold;" prefHeight="40" prefWidth="65"/>
             </VBox>
             
             <!-- Selected Students -->

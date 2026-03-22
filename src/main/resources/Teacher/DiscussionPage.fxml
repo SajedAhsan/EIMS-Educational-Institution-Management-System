@@ -16,26 +16,26 @@
       <Insets bottom="14.0" left="14.0" right="14.0" top="14.0" />
    </padding>
    <children>
-      <VBox spacing="10.0" prefWidth="250.0">
+      <VBox spacing="10.0" minWidth="200.0" HBox.hgrow="NEVER">
          <children>
             <Label text="Discussion Threads">
                <font>
                   <Font name="System Bold" size="16.0" />
                </font>
             </Label>
-            <ListView fx:id="forumThreadsListView" onMouseClicked="#handleForumThreadSelection" prefHeight="410.0" />
+            <ListView fx:id="forumThreadsListView" onMouseClicked="#handleForumThreadSelection" VBox.vgrow="ALWAYS" />
             <TextField fx:id="assignmentThreadTitleField" promptText="Discussion for Assignment 2" />
             <Button onAction="#handleCreateAssignmentThread" prefHeight="34.0" style="-fx-background-color: #334155; -fx-text-fill: white; -fx-font-weight: bold;" text="Create Assignment Thread" />
          </children>
       </VBox>
-      <VBox spacing="10.0" prefWidth="560.0" HBox.hgrow="ALWAYS">
+      <VBox spacing="10.0" HBox.hgrow="ALWAYS">
          <children>
             <Label text="Messages">
                <font>
                   <Font name="System Bold" size="16.0" />
                </font>
             </Label>
-            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" prefHeight="360.0" vbarPolicy="AS_NEEDED">
+            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" VBox.vgrow="ALWAYS">
                <content>
                   <VBox fx:id="forumMessagesVBox" spacing="8.0" style="-fx-background-color: #f8fafc;">
                      <padding>

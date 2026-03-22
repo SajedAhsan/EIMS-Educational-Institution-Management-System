@@ -41,14 +41,14 @@
 
       <Label fx:id="attendanceSummaryLabel" textFill="#334155" />
 
-      <TableView fx:id="attendanceTable" editable="true" prefHeight="330.0" VBox.vgrow="ALWAYS">
+      <TableView fx:id="attendanceTable" editable="true" VBox.vgrow="ALWAYS">
          <columns>
             <TableColumn fx:id="colAttendanceStudent" prefWidth="280.0" text="Student" />
             <TableColumn fx:id="colAttendanceStatus" prefWidth="260.0" text="Attendance Status" />
          </columns>
       </TableView>
 
-      <BarChart fx:id="attendanceOverviewBarChart" prefHeight="220.0">
+      <BarChart fx:id="attendanceOverviewBarChart" VBox.vgrow="ALWAYS">
          <xAxis>
             <CategoryAxis label="Week" />
          </xAxis>

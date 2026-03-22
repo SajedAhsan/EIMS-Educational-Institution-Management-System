@@ -15,7 +15,7 @@
       <Insets bottom="14.0" left="14.0" right="14.0" top="14.0" />
    </padding>
    <children>
-      <VBox spacing="10.0" prefWidth="390.0">
+      <VBox spacing="10.0" minWidth="300.0" HBox.hgrow="NEVER">
          <children>
             <Label text="Announcements">
                <font>
@@ -30,7 +30,7 @@
             <Button onAction="#handlePostAnnouncement" prefHeight="34.0" prefWidth="165.0" style="-fx-background-color: #15803d; -fx-text-fill: white; -fx-font-weight: bold;" text="Post Announcement" />
          </children>
       </VBox>
-      <VBox spacing="10.0" prefWidth="430.0" HBox.hgrow="ALWAYS">
+      <VBox spacing="10.0" HBox.hgrow="ALWAYS">
          <children>
             <Label text="Recent Announcements">
                <font>

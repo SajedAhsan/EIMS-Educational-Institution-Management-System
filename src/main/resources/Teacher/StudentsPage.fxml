@@ -18,7 +18,7 @@
          </font>
       </Label>
       <Label text="Enrolled students in this group" textFill="#64748b" />
-      <TableView fx:id="studentsTable" prefHeight="560.0" prefWidth="830.0">
+      <TableView fx:id="studentsTable">
          <columns>
             <TableColumn fx:id="colMemberName" prefWidth="390.0" text="Student Name" />
             <TableColumn fx:id="colMemberEmail" prefWidth="420.0" text="Email" />
