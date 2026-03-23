@@ -13,7 +13,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
-
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.ScrollPane;
@@ -82,7 +82,7 @@ public class TeacherProfileController {
     private void displayProfile(TeacherProfileData p) {
         labelName.setText(orDummy(p.getName(), "Dummy Name"));
         labelEmail.setText(orDummy(p.getEmail(), "Dummy X"));
-        labelRole.setText(orDummy(p.getSubject(), "Dummy X"));
+        labelRole.setText(orDummy(p.getRole(), "Dummy X"));
         labelDepartment.setText(orDummy(p.getDepartmentFaculty(), "Dummy X"));
         labelSubjects.setText(orDummy(p.getSubject(), "Dummy X"));
         labelContact.setText(orDummy(p.getPhoneNumber(), "Dummy X"));
@@ -177,13 +177,21 @@ public class TeacherProfileController {
         TextField fDepartment        = makeField(profileData.getDepartmentFaculty());
         TextField fYearsExperience   = makeField(String.valueOf(profileData.getYearsOfExperience()));
         TextField fQualification     = makeField(profileData.getHighestDegreeQualification());
+        
+        ComboBox<String> cmbRole = new ComboBox<>();
+        cmbRole.getItems().addAll("Lecturer", "Assistant Professor", "Associate Professor", "Professor");
+        cmbRole.setPrefWidth(300);
+        String currentRole = profileData.getRole();
+        if (currentRole != null && !currentRole.isBlank()) {
+            cmbRole.setValue(currentRole);
+        }
 
         Object[][] rows = {
             {"Full Name",                        fName},
             {"Email Address",                    fEmail},
-            {"Role / Position",                  fSubject},
-            {"Department / Faculty",             fDepartment},
+            {"Role / Position",                  cmbRole},
             {"Subjects / Courses Taught",        fSubject},
+            {"Department / Faculty",             fDepartment},
             {"Contact Information",              fPhoneNumber},
             {"Years of Experience",              fYearsExperience},
             {"Highest Degree / Qualification",   fQualification}
@@ -218,6 +226,7 @@ public class TeacherProfileController {
         btnCancel.setOnAction(e -> dialog.close());
         btnSave.setOnAction(e -> {
             profileData.setName(fName.getText().trim());
+            profileData.setRole(cmbRole.getValue() != null ? cmbRole.getValue() : "");
             profileData.setSubject(fSubject.getText().trim());
             profileData.setPhoneNumber(fPhoneNumber.getText().trim());
             profileData.setDepartmentFaculty(fDepartment.getText().trim());
@@ -233,7 +242,7 @@ public class TeacherProfileController {
                 db.updateTeacherProfile(teacherEmail, profileData);
                 displayProfile(profileData);
                 dialog.close();
-                showAlert(AlertType.INFORMATION, "Success", "Profile information saved");
+                showAlert(AlertType.INFORMATION, "Success", "Profile saved successfully!");
             } catch (SQLException ex) {
                 ex.printStackTrace();
                 showAlert(AlertType.ERROR, "Save Failed", "Could not save profile: " + ex.getMessage());

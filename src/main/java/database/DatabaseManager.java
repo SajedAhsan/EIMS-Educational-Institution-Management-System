@@ -67,6 +67,19 @@ public class DatabaseManager {
                     "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)";
             stmt.execute(createTeachersTable);
             
+            // Add extended profile columns to teachers table if they don't exist
+            String[] alterTeacherColumns = {
+                "ALTER TABLE teachers ADD COLUMN IF NOT EXISTS phone_number VARCHAR(50)",
+                "ALTER TABLE teachers ADD COLUMN IF NOT EXISTS department_faculty VARCHAR(255)",
+                "ALTER TABLE teachers ADD COLUMN IF NOT EXISTS years_of_experience INT DEFAULT 0",
+                "ALTER TABLE teachers ADD COLUMN IF NOT EXISTS highest_degree_qualification VARCHAR(255)",
+                "ALTER TABLE teachers ADD COLUMN IF NOT EXISTS photo_path VARCHAR(500)",
+                "ALTER TABLE teachers ADD COLUMN IF NOT EXISTS role VARCHAR(50)"
+            };
+            for (String alter : alterTeacherColumns) {
+                stmt.execute(alter);
+            }
+            
             // Create Students table
             String createStudentsTable = "CREATE TABLE IF NOT EXISTS students (" +
                     "id INT AUTO_INCREMENT PRIMARY KEY, " +
@@ -200,17 +213,7 @@ public class DatabaseManager {
                 stmt.execute(alter);
             }
 
-            // Add extended profile columns to teachers table if they don't exist
-            String[] alterTeacherColumns = {
-                "ALTER TABLE teachers ADD COLUMN IF NOT EXISTS phone_number VARCHAR(50)",
-                "ALTER TABLE teachers ADD COLUMN IF NOT EXISTS department_faculty VARCHAR(255)",
-                "ALTER TABLE teachers ADD COLUMN IF NOT EXISTS years_of_experience INT",
-                "ALTER TABLE teachers ADD COLUMN IF NOT EXISTS highest_degree_qualification VARCHAR(255)",
-                "ALTER TABLE teachers ADD COLUMN IF NOT EXISTS photo_path VARCHAR(500)"
-            };
-            for (String alter : alterTeacherColumns) {
-                stmt.execute(alter);
-            }
+
 
             System.out.println("Database tables initialized successfully.");
         } catch (SQLException e) {
@@ -1041,7 +1044,7 @@ public class DatabaseManager {
 
     public TeacherProfileData getTeacherProfile(String email) throws SQLException {
         String sql = "SELECT name, email, subject, phone_number, department_faculty, " +
-                     "years_of_experience, highest_degree_qualification, photo_path " +
+                     "years_of_experience, highest_degree_qualification, photo_path, role " +
                      "FROM teachers WHERE email = ?";
         try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
             pstmt.setString(1, email);
@@ -1055,7 +1058,8 @@ public class DatabaseManager {
                         rs.getString("department_faculty"),
                         rs.getInt("years_of_experience"),
                         rs.getString("highest_degree_qualification"),
-                        rs.getString("photo_path")
+                        rs.getString("photo_path"),
+                        rs.getString("role")
                     );
                 }
             }
@@ -1065,7 +1069,7 @@ public class DatabaseManager {
 
     public void updateTeacherProfile(String email, TeacherProfileData p) throws SQLException {
         String sql = "UPDATE teachers SET name=?, subject=?, phone_number=?, department_faculty=?, " +
-                     "years_of_experience=?, highest_degree_qualification=?, photo_path=? WHERE email=?";
+                     "years_of_experience=?, highest_degree_qualification=?, photo_path=?, role=? WHERE email=?";
         try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
             pstmt.setString(1,  p.getName());
             pstmt.setString(2,  p.getSubject());
@@ -1074,7 +1078,8 @@ public class DatabaseManager {
             pstmt.setInt(5,     p.getYearsOfExperience());
             pstmt.setString(6,  p.getHighestDegreeQualification());
             pstmt.setString(7,  p.getPhotoPath());
-            pstmt.setString(8,  email);
+            pstmt.setString(8,  p.getRole());
+            pstmt.setString(9,  email);
             pstmt.executeUpdate();
         }
     }
@@ -1503,11 +1508,11 @@ public class DatabaseManager {
     public static class TeacherProfileData {
         private String name, email, subject, phoneNumber, departmentFaculty;
         private int yearsOfExperience;
-        private String highestDegreeQualification, photoPath;
+        private String highestDegreeQualification, photoPath, role;
 
         public TeacherProfileData(String name, String email, String subject, String phoneNumber,
                                    String departmentFaculty, int yearsOfExperience,
-                                   String highestDegreeQualification, String photoPath) {
+                                   String highestDegreeQualification, String photoPath, String role) {
             this.name = name;
             this.email = email;
             this.subject = subject;
@@ -1516,6 +1521,7 @@ public class DatabaseManager {
             this.yearsOfExperience = yearsOfExperience;
             this.highestDegreeQualification = highestDegreeQualification;
             this.photoPath = photoPath;
+            this.role = role;
         }
 
         public String getName()                      { return name; }
@@ -1526,6 +1532,7 @@ public class DatabaseManager {
         public int getYearsOfExperience()            { return yearsOfExperience; }
         public String getHighestDegreeQualification() { return highestDegreeQualification; }
         public String getPhotoPath()                 { return photoPath; }
+        public String getRole()                      { return role; }
 
         public void setName(String v)                           { name = v; }
         public void setSubject(String v)                        { subject = v; }
@@ -1534,6 +1541,7 @@ public class DatabaseManager {
         public void setYearsOfExperience(int v)                 { yearsOfExperience = v; }
         public void setHighestDegreeQualification(String v)     { highestDegreeQualification = v; }
         public void setPhotoPath(String v)                      { photoPath = v; }
+        public void setRole(String v)                           { role = v; }
     }
 
     public static class NotificationData {
