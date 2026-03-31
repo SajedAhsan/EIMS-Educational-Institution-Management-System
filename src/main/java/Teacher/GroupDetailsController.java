@@ -1109,50 +1109,71 @@ public class GroupDetailsController {
             return;
         }
 
-        LocalDate selectedDate = attendanceDatePicker.getValue() != null
-            ? attendanceDatePicker.getValue()
-            : LocalDate.now();
-        selectedDate = normalizeAttendanceDate(selectedDate);
-        if (!isAttendanceDateValidForGroup(selectedDate)) {
-            showAlert(AlertType.WARNING, "Invalid Date",
-                "Attendance can only be exported from " + getAttendanceTrackingStartDate() + " onward.");
-            return;
-        }
-        if (attendanceDatePicker != null && !selectedDate.equals(attendanceDatePicker.getValue())) {
-            attendanceDatePicker.setValue(selectedDate);
-        }
+        LocalDate exportDate = LocalDate.now();
 
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Export Attendance CSV");
         chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
-        chooser.setInitialFileName("attendance-" + selectedCourse.getCode() + "-" + selectedDate + ".csv");
+        chooser.setInitialFileName("attendance-summary-" + selectedCourse.getCode() + "-" + exportDate + ".csv");
 
         File destination = chooser.showSaveDialog(attendanceTable.getScene().getWindow());
         if (destination == null) {
             return;
         }
 
-        refreshAttendanceTableAndCharts();
-
-        List<String> lines = new ArrayList<>();
-        lines.add("Course,Date,Student,Status,AttendancePercent,Risk");
-        String courseDisplay = selectedCourse.getCode() + " - " + selectedCourse.getTitle();
-        for (AttendanceRow row : attendanceRows) {
-            lines.add(String.join(",",
-                csvEscape(courseDisplay),
-                csvEscape(selectedDate.toString()),
-                csvEscape(row.getStudentName()),
-                csvEscape(row.getStatus()),
-                String.format("%.1f", row.getAttendancePercent()),
-                csvEscape(isAtRisk(row.getAttendancePercent()) ? "At Risk" : "On Track")
-            ));
-        }
-
         try {
+            selectedAttendanceCourseId = selectedCourse.getId();
+            List<LocalDate> allWorkingDays = dbManager.getWorkingDays(selectedAttendanceCourseId);
+            List<DatabaseManager.MemberData> exportMembers = dbManager.getGroupMembers(groupId);
+
+            if (exportMembers.isEmpty()) {
+                showAlert(AlertType.WARNING, "No Students", "This group has no students to export.");
+                return;
+            }
+
+            List<LocalDate> workingDaysInRange = new ArrayList<>();
+            LocalDate trackingStartDate = getAttendanceTrackingStartDate();
+            for (LocalDate day : allWorkingDays) {
+                if (!day.isBefore(trackingStartDate) && !day.isAfter(exportDate)) {
+                    workingDaysInRange.add(day);
+                }
+            }
+
+            int totalWorkingClassDays = workingDaysInRange.size();
+
+            List<String> lines = new ArrayList<>();
+            lines.add("Student Name,Total Working Class Days,Present Days,Percentage Present");
+            for (DatabaseManager.MemberData member : exportMembers) {
+                int studentId = member.getId();
+                int presentDays = 0;
+
+                for (LocalDate day : workingDaysInRange) {
+                    if (progressTrackerService.isPresentOnDate(
+                        studentId,
+                        selectedAttendanceCourseId,
+                        day,
+                        trackingStartDate
+                    )) {
+                        presentDays++;
+                    }
+                }
+
+                double percentagePresent = totalWorkingClassDays == 0
+                    ? 0.0
+                    : (presentDays * 100.0) / totalWorkingClassDays;
+
+                lines.add(String.join(",",
+                    csvEscape(member.getName()),
+                    String.valueOf(totalWorkingClassDays),
+                    String.valueOf(presentDays),
+                    String.format("%.1f%%", percentagePresent)
+                ));
+            }
+
             Files.write(destination.toPath(), lines, StandardCharsets.UTF_8);
             showAlert(AlertType.INFORMATION, "Export Complete",
                 "Attendance exported successfully to:\n" + destination.getAbsolutePath());
-        } catch (IOException ex) {
+        } catch (IOException | SQLException ex) {
             ex.printStackTrace();
             showAlert(AlertType.ERROR, "Export Failed", "Could not export CSV: " + ex.getMessage());
         }
