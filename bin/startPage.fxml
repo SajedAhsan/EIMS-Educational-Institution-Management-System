@@ -17,10 +17,10 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="StartPageController">
+<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="StartPageController">
    <children>
       <!-- Gradient Background -->
-      <Rectangle arcHeight="0.0" arcWidth="0.0" height="700.0" width="900.0">
+      <Rectangle arcHeight="0.0" arcWidth="0.0" height="800.0" width="1200.0">
          <fill>
             <LinearGradient endX="1.0" endY="1.0" startX="0.0" startY="0.0">
                <stops>
@@ -40,10 +40,10 @@
       </Rectangle>
       
       <!-- Main Content -->
-      <Pane prefHeight="700.0" prefWidth="900.0">
+      <Pane prefHeight="800.0" prefWidth="1200.0">
          <children>
             <!-- Header Section -->
-            <VBox alignment="CENTER" layoutX="150.0" layoutY="80.0" prefWidth="600.0" spacing="10.0">
+            <VBox alignment="CENTER" layoutX="300.0" layoutY="80.0" prefWidth="600.0" spacing="10.0">
                <children>
                   <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" text="Welcome to EIMS" textAlignment="CENTER">
                      <font>
@@ -70,7 +70,7 @@
             </VBox>
             
             <!-- Cards Container -->
-            <HBox alignment="CENTER" layoutX="125.0" layoutY="280.0" prefWidth="650.0" spacing="50.0">
+            <HBox alignment="CENTER" layoutX="125.0" layoutY="280.0" prefWidth="950.0" spacing="50.0">
                <children>
                   <!-- Teacher Card -->
                   <VBox alignment="CENTER" prefHeight="340.0" prefWidth="280.0" spacing="15.0" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 25;">

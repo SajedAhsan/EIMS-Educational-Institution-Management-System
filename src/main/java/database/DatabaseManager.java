@@ -13,6 +13,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import util.forum.Announcement;
+import util.forum.ForumMessage;
+import util.forum.ForumThread;
+
 public class DatabaseManager {
     private static final String DB_URL = "jdbc:h2:./eims_db";
     private static final String DB_USER = "admin";
@@ -191,6 +195,47 @@ public class DatabaseManager {
                 "message TEXT NOT NULL, " +
                 "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
                 "is_read BOOLEAN DEFAULT FALSE)");
+
+            // Create forum announcements table
+            stmt.execute("CREATE TABLE IF NOT EXISTS forum_announcements (" +
+                "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                "course_id INT NOT NULL, " +
+                "teacher_id INT NOT NULL, " +
+                "title VARCHAR(255) NOT NULL, " +
+                "message TEXT NOT NULL, " +
+                "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
+                "FOREIGN KEY (course_id) REFERENCES groups(id) ON DELETE CASCADE)");
+            stmt.execute("CREATE INDEX IF NOT EXISTS idx_forum_announcements_course_time " +
+                "ON forum_announcements(course_id, created_at DESC)");
+
+            // Create forum threads table
+            stmt.execute("CREATE TABLE IF NOT EXISTS forum_threads (" +
+                "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                "course_id INT NOT NULL, " +
+                "teacher_id INT, " +
+                "title VARCHAR(255) NOT NULL, " +
+                "thread_type VARCHAR(20) NOT NULL, " +
+                "assignment_id INT, " +
+                "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
+                "FOREIGN KEY (course_id) REFERENCES groups(id) ON DELETE CASCADE)");
+            stmt.execute("CREATE INDEX IF NOT EXISTS idx_forum_threads_course_time " +
+                "ON forum_threads(course_id, created_at DESC)");
+            stmt.execute("CREATE INDEX IF NOT EXISTS idx_forum_threads_course_type " +
+                "ON forum_threads(course_id, thread_type)");
+
+            // Create forum messages table
+            stmt.execute("CREATE TABLE IF NOT EXISTS forum_messages (" +
+                "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                "thread_id INT NOT NULL, " +
+                "author_id INT NOT NULL, " +
+                "author_type VARCHAR(10) NOT NULL, " +
+                "author_display_name VARCHAR(255) NOT NULL, " +
+                "message_text TEXT NOT NULL, " +
+                "parent_message_id INT, " +
+                "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
+                "FOREIGN KEY (thread_id) REFERENCES forum_threads(id) ON DELETE CASCADE)");
+            stmt.execute("CREATE INDEX IF NOT EXISTS idx_forum_messages_thread_time " +
+                "ON forum_messages(thread_id, created_at ASC)");
 
             // Add extended profile columns to students table if they don't exist
             String[] alterColumns = {
@@ -1159,6 +1204,257 @@ public class DatabaseManager {
             pstmt.setString(2, userType);
             pstmt.executeUpdate();
         }
+    }
+
+    // ── Forum persistence methods ─────────────────────────────────────────────
+
+    public Announcement createForumAnnouncement(int courseId,
+                                                int teacherId,
+                                                String title,
+                                                String message,
+                                                LocalDateTime createdAt) throws SQLException {
+        String sql = "INSERT INTO forum_announcements (course_id, teacher_id, title, message, created_at) " +
+                     "VALUES (?, ?, ?, ?, ?)";
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            pstmt.setInt(1, courseId);
+            pstmt.setInt(2, teacherId);
+            pstmt.setString(3, title);
+            pstmt.setString(4, message);
+            pstmt.setTimestamp(5, Timestamp.valueOf(createdAt));
+            pstmt.executeUpdate();
+
+            try (ResultSet rs = pstmt.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return new Announcement(rs.getInt(1), courseId, teacherId, title, message, createdAt);
+                }
+            }
+        }
+        throw new SQLException("Failed to create forum announcement");
+    }
+
+    public List<Announcement> getForumAnnouncementsByCourse(int courseId) throws SQLException {
+        String sql = "SELECT id, course_id, teacher_id, title, message, created_at " +
+                     "FROM forum_announcements WHERE course_id = ? ORDER BY created_at DESC";
+        List<Announcement> list = new ArrayList<>();
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
+            pstmt.setInt(1, courseId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    list.add(new Announcement(
+                        rs.getInt("id"),
+                        rs.getInt("course_id"),
+                        rs.getInt("teacher_id"),
+                        rs.getString("title"),
+                        rs.getString("message"),
+                        rs.getTimestamp("created_at").toLocalDateTime()
+                    ));
+                }
+            }
+        }
+        return list;
+    }
+
+    public ForumThread getGeneralForumThread(int courseId) throws SQLException {
+        String sql = "SELECT id, course_id, teacher_id, title, thread_type, assignment_id, created_at " +
+                     "FROM forum_threads WHERE course_id = ? AND thread_type = ? " +
+                     "ORDER BY created_at ASC LIMIT 1";
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
+            pstmt.setInt(1, courseId);
+            pstmt.setString(2, ForumThread.ThreadType.GENERAL.name());
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapForumThread(rs);
+                }
+            }
+        }
+        return null;
+    }
+
+    public ForumThread createForumThread(int courseId,
+                                         int teacherId,
+                                         String title,
+                                         ForumThread.ThreadType type,
+                                         Integer assignmentId,
+                                         LocalDateTime createdAt) throws SQLException {
+        String sql = "INSERT INTO forum_threads (course_id, teacher_id, title, thread_type, assignment_id, created_at) " +
+                     "VALUES (?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            pstmt.setInt(1, courseId);
+            if (teacherId > 0) {
+                pstmt.setInt(2, teacherId);
+            } else {
+                pstmt.setNull(2, java.sql.Types.INTEGER);
+            }
+            pstmt.setString(3, title);
+            pstmt.setString(4, type.name());
+            if (assignmentId != null) {
+                pstmt.setInt(5, assignmentId);
+            } else {
+                pstmt.setNull(5, java.sql.Types.INTEGER);
+            }
+            pstmt.setTimestamp(6, Timestamp.valueOf(createdAt));
+            pstmt.executeUpdate();
+
+            try (ResultSet rs = pstmt.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return new ForumThread(
+                        rs.getInt(1),
+                        courseId,
+                        teacherId,
+                        title,
+                        type,
+                        assignmentId,
+                        createdAt
+                    );
+                }
+            }
+        }
+        throw new SQLException("Failed to create forum thread");
+    }
+
+    public List<ForumThread> getForumThreadsByCourse(int courseId) throws SQLException {
+        String sql = "SELECT id, course_id, teacher_id, title, thread_type, assignment_id, created_at " +
+                     "FROM forum_threads WHERE course_id = ? ORDER BY created_at DESC";
+        List<ForumThread> list = new ArrayList<>();
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
+            pstmt.setInt(1, courseId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapForumThread(rs));
+                }
+            }
+        }
+        return list;
+    }
+
+    public ForumThread getForumThreadById(int threadId) throws SQLException {
+        String sql = "SELECT id, course_id, teacher_id, title, thread_type, assignment_id, created_at " +
+                     "FROM forum_threads WHERE id = ?";
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
+            pstmt.setInt(1, threadId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapForumThread(rs);
+                }
+            }
+        }
+        return null;
+    }
+
+    public ForumMessage createForumMessage(int threadId,
+                                           int authorId,
+                                           String authorType,
+                                           String authorDisplayName,
+                                           String messageText,
+                                           Integer parentMessageId,
+                                           LocalDateTime createdAt) throws SQLException {
+        String sql = "INSERT INTO forum_messages (thread_id, author_id, author_type, author_display_name, " +
+                     "message_text, parent_message_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            pstmt.setInt(1, threadId);
+            pstmt.setInt(2, authorId);
+            pstmt.setString(3, authorType);
+            pstmt.setString(4, authorDisplayName);
+            pstmt.setString(5, messageText);
+            if (parentMessageId != null) {
+                pstmt.setInt(6, parentMessageId);
+            } else {
+                pstmt.setNull(6, java.sql.Types.INTEGER);
+            }
+            pstmt.setTimestamp(7, Timestamp.valueOf(createdAt));
+            pstmt.executeUpdate();
+
+            try (ResultSet rs = pstmt.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return new ForumMessage(
+                        rs.getInt(1),
+                        threadId,
+                        authorId,
+                        authorType,
+                        authorDisplayName,
+                        messageText,
+                        createdAt,
+                        parentMessageId
+                    );
+                }
+            }
+        }
+        throw new SQLException("Failed to create forum message");
+    }
+
+    public List<ForumMessage> getForumMessagesByThread(int threadId) throws SQLException {
+        String sql = "SELECT id, thread_id, author_id, author_type, author_display_name, " +
+                     "message_text, parent_message_id, created_at " +
+                     "FROM forum_messages WHERE thread_id = ? ORDER BY created_at ASC";
+        List<ForumMessage> list = new ArrayList<>();
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
+            pstmt.setInt(1, threadId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    list.add(new ForumMessage(
+                        rs.getInt("id"),
+                        rs.getInt("thread_id"),
+                        rs.getInt("author_id"),
+                        rs.getString("author_type"),
+                        rs.getString("author_display_name"),
+                        rs.getString("message_text"),
+                        rs.getTimestamp("created_at").toLocalDateTime(),
+                        rs.getObject("parent_message_id") != null ? rs.getInt("parent_message_id") : null
+                    ));
+                }
+            }
+        }
+        return list;
+    }
+
+    public ForumMessage getForumMessageById(int messageId) throws SQLException {
+        String sql = "SELECT id, thread_id, author_id, author_type, author_display_name, " +
+                     "message_text, parent_message_id, created_at " +
+                     "FROM forum_messages WHERE id = ?";
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
+            pstmt.setInt(1, messageId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return new ForumMessage(
+                        rs.getInt("id"),
+                        rs.getInt("thread_id"),
+                        rs.getInt("author_id"),
+                        rs.getString("author_type"),
+                        rs.getString("author_display_name"),
+                        rs.getString("message_text"),
+                        rs.getTimestamp("created_at").toLocalDateTime(),
+                        rs.getObject("parent_message_id") != null ? rs.getInt("parent_message_id") : null
+                    );
+                }
+            }
+        }
+        return null;
+    }
+
+    private ForumThread mapForumThread(ResultSet rs) throws SQLException {
+        String rawType = rs.getString("thread_type");
+        ForumThread.ThreadType type;
+        try {
+            type = ForumThread.ThreadType.valueOf(rawType);
+        } catch (IllegalArgumentException ex) {
+            type = ForumThread.ThreadType.GENERAL;
+        }
+
+        Integer assignmentId = rs.getObject("assignment_id") != null
+            ? rs.getInt("assignment_id")
+            : null;
+
+        int teacherId = rs.getObject("teacher_id") != null ? rs.getInt("teacher_id") : 0;
+
+        return new ForumThread(
+            rs.getInt("id"),
+            rs.getInt("course_id"),
+            teacherId,
+            rs.getString("title"),
+            type,
+            assignmentId,
+            rs.getTimestamp("created_at").toLocalDateTime()
+        );
     }
 
     /**

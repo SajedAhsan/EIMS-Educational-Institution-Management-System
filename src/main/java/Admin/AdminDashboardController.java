@@ -296,13 +296,13 @@ public class AdminDashboardController {
     private void handleLogout() {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/startPage.fxml"));
-            Scene scene = new Scene(fxmlLoader.load(), 900, 700);
+            Scene scene = new Scene(fxmlLoader.load(), 1200, 800);
             
             Stage stage = (Stage) logoutButton.getScene().getWindow();
             stage.setScene(scene);
             stage.setTitle("EIMS - Start Page");
-            stage.setWidth(900);
-            stage.setHeight(700);
+            stage.setWidth(1200);
+            stage.setHeight(800);
             stage.setResizable(false);
         } catch (IOException e) {
             e.printStackTrace();

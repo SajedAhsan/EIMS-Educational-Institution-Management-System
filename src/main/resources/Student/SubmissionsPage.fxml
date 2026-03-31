@@ -18,12 +18,12 @@
          </font>
       </Label>
       <Label fx:id="studentSubmissionsStatsLabel" textFill="#475569" />
-      <TableView fx:id="submissionsTable" prefHeight="500.0" VBox.vgrow="ALWAYS">
+      <TableView fx:id="submissionsTable" VBox.vgrow="ALWAYS">
          <columns>
-            <TableColumn fx:id="colAssignmentName" prefWidth="260.0" text="Assignment" />
-            <TableColumn fx:id="colSubmissionTime" prefWidth="170.0" text="Submitted At" />
-            <TableColumn fx:id="colStatus" prefWidth="150.0" text="Status" />
-            <TableColumn fx:id="colFile" prefWidth="170.0" text="File" />
+            <TableColumn fx:id="colAssignmentName" prefWidth="360.0" text="Assignment" />
+            <TableColumn fx:id="colSubmissionTime" prefWidth="230.0" text="Submitted At" />
+            <TableColumn fx:id="colStatus" prefWidth="170.0" text="Status" />
+            <TableColumn fx:id="colFile" prefWidth="220.0" text="File" />
             <TableColumn fx:id="colGrade" prefWidth="120.0" text="Grade" />
          </columns>
       </TableView>

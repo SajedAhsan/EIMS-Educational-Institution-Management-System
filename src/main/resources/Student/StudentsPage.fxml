@@ -17,10 +17,10 @@
             <Font name="System Bold" size="18.0" />
          </font>
       </Label>
-      <TableView fx:id="studentsTable" prefHeight="520.0" VBox.vgrow="ALWAYS">
+      <TableView fx:id="studentsTable" VBox.vgrow="ALWAYS">
          <columns>
-            <TableColumn fx:id="colMemberName" prefWidth="300.0" text="Student Name" />
-            <TableColumn fx:id="colMemberEmail" prefWidth="360.0" text="Email" />
+            <TableColumn fx:id="colMemberName" prefWidth="420.0" text="Student Name" />
+            <TableColumn fx:id="colMemberEmail" prefWidth="520.0" text="Email" />
          </columns>
       </TableView>
    </children>

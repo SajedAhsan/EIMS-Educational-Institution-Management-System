@@ -105,8 +105,8 @@ public class StudentGroupsListController {
             
             Stage stage = (Stage) groupsList.getScene().getWindow();
             stage.setScene(new Scene(root));
-            stage.setWidth(900.0);
-            stage.setHeight(700.0);
+            stage.setWidth(1200.0);
+            stage.setHeight(800.0);
             stage.setResizable(false);
             stage.show();
         } catch (IOException e) {
@@ -134,8 +134,8 @@ public class StudentGroupsListController {
             
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
-            stage.setWidth(900.0);
-            stage.setHeight(700.0);
+            stage.setWidth(1200.0);
+            stage.setHeight(800.0);
             stage.setResizable(false);
             stage.show();
         } catch (IOException e) {

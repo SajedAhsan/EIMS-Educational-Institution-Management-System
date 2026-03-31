@@ -12,14 +12,14 @@
 <?import javafx.scene.paint.Stop?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane minHeight="700" maxHeight="700" minWidth="900" maxWidth="900" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
+<AnchorPane minHeight="800" maxHeight="800" minWidth="1200" maxWidth="1200" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
     <LinearGradient startX="0" startY="0" endX="1" endY="1">
         <Stop offset="0" color="#667eea"/>
         <Stop offset="1" color="#764ba2"/>
     </LinearGradient>
     
     <!-- Main Container -->
-    <VBox layoutX="0" layoutY="0" prefWidth="900" prefHeight="700" spacing="20" style="-fx-background-color: linear-gradient(to bottom, #667eea, #764ba2);" AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+    <VBox layoutX="0" layoutY="0" prefWidth="1200" prefHeight="800" spacing="20" style="-fx-background-color: linear-gradient(to bottom, #667eea, #764ba2);" AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
         
         <!-- Title -->
         <Label text="Admin Panel" textFill="WHITE">

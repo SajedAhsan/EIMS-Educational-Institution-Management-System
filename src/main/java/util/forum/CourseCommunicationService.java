@@ -167,15 +167,9 @@ public class CourseCommunicationService {
 
     private static final CourseCommunicationService INSTANCE = new CourseCommunicationService();
 
-    private final AtomicInteger announcementIdSequence = new AtomicInteger(1);
-    private final AtomicInteger threadIdSequence = new AtomicInteger(1);
-    private final AtomicInteger messageIdSequence = new AtomicInteger(1);
     private final AtomicInteger messageNotificationIdSequence = new AtomicInteger(1);
 
-    // Required in-memory storage lists.
-    private final List<Announcement> announcements = new CopyOnWriteArrayList<>();
-    private final List<ForumThread> threads = new CopyOnWriteArrayList<>();
-    private final List<ForumMessage> messages = new CopyOnWriteArrayList<>();
+    // Message notifications remain in memory for lightweight unread tracking.
     private final List<MessageNotification> messageNotifications = new CopyOnWriteArrayList<>();
 
     private CourseCommunicationService() {
@@ -192,19 +186,18 @@ public class CourseCommunicationService {
                                          String courseName,
                                          List<DatabaseManager.MemberData> enrolledStudents,
                                          DatabaseManager dbManager) throws SQLException {
-        Announcement announcement = new Announcement(
-            announcementIdSequence.getAndIncrement(),
+        DatabaseManager store = dbManager != null ? dbManager : DatabaseManager.getInstance();
+        Announcement announcement = store.createForumAnnouncement(
             courseId,
             teacherId,
             title,
             message,
             LocalDateTime.now()
         );
-        announcements.add(announcement);
 
-        if (dbManager != null && enrolledStudents != null) {
+        if (store != null && enrolledStudents != null) {
             for (DatabaseManager.MemberData student : enrolledStudents) {
-                dbManager.createNotification(
+                store.createNotification(
                     student.getId(),
                     "STUDENT",
                     "New announcement posted in " + courseName + ": " + title
@@ -216,60 +209,80 @@ public class CourseCommunicationService {
     }
 
     public List<Announcement> getAnnouncementsForCourse(int courseId) {
-        List<Announcement> result = new ArrayList<>();
-        for (Announcement announcement : announcements) {
-            if (announcement.getCourseID() == courseId) {
-                result.add(announcement);
-            }
+        try {
+            return DatabaseManager.getInstance().getForumAnnouncementsByCourse(courseId);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return new ArrayList<>();
         }
-        result.sort(Comparator.comparing(Announcement::getTimestamp).reversed());
-        return result;
     }
 
     public ForumThread ensureGeneralThread(int courseId, int teacherId) {
-        for (ForumThread thread : threads) {
-            if (thread.getCourseID() == courseId && thread.getType() == ForumThread.ThreadType.GENERAL) {
-                return thread;
+        DatabaseManager dbManager = DatabaseManager.getInstance();
+        try {
+            ForumThread existing = dbManager.getGeneralForumThread(courseId);
+            if (existing != null) {
+                return existing;
             }
-        }
 
-        ForumThread created = new ForumThread(
-            threadIdSequence.getAndIncrement(),
-            courseId,
-            teacherId,
-            "General Discussion",
-            ForumThread.ThreadType.GENERAL,
-            null,
-            LocalDateTime.now()
-        );
-        threads.add(created);
-        return created;
+            return dbManager.createForumThread(
+                courseId,
+                teacherId,
+                "General Discussion",
+                ForumThread.ThreadType.GENERAL,
+                null,
+                LocalDateTime.now()
+            );
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return new ForumThread(
+                -1,
+                courseId,
+                teacherId,
+                "General Discussion",
+                ForumThread.ThreadType.GENERAL,
+                null,
+                LocalDateTime.now()
+            );
+        }
     }
 
     public ForumThread createAssignmentThread(int courseId,
                                               int teacherId,
                                               String title,
                                               Integer assignmentId) {
-        ForumThread created = new ForumThread(
-            threadIdSequence.getAndIncrement(),
-            courseId,
-            teacherId,
-            title,
-            ForumThread.ThreadType.ASSIGNMENT,
-            assignmentId,
-            LocalDateTime.now()
-        );
-        threads.add(created);
-        return created;
+        try {
+            return DatabaseManager.getInstance().createForumThread(
+                courseId,
+                teacherId,
+                title,
+                ForumThread.ThreadType.ASSIGNMENT,
+                assignmentId,
+                LocalDateTime.now()
+            );
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return new ForumThread(
+                -1,
+                courseId,
+                teacherId,
+                title,
+                ForumThread.ThreadType.ASSIGNMENT,
+                assignmentId,
+                LocalDateTime.now()
+            );
+        }
     }
 
     public List<ForumThread> getThreadsForCourse(int courseId) {
-        List<ForumThread> result = new ArrayList<>();
-        for (ForumThread thread : threads) {
-            if (thread.getCourseID() == courseId) {
-                result.add(thread);
-            }
+        List<ForumThread> result;
+        try {
+            result = DatabaseManager.getInstance().getForumThreadsByCourse(courseId);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return new ArrayList<>();
         }
+
         result.sort((a, b) -> {
             if (a.getType() == ForumThread.ThreadType.GENERAL && b.getType() != ForumThread.ThreadType.GENERAL) {
                 return -1;
@@ -293,22 +306,21 @@ public class CourseCommunicationService {
                                     List<CourseUser> participants,
                                     DatabaseManager dbManager,
                                     boolean notifyOnReply) throws SQLException {
-        ForumMessage message = new ForumMessage(
-            messageIdSequence.getAndIncrement(),
+        DatabaseManager store = dbManager != null ? dbManager : DatabaseManager.getInstance();
+        ForumMessage message = store.createForumMessage(
             threadId,
             authorId,
             authorType,
             authorDisplayName,
             messageText,
-            LocalDateTime.now(),
-            parentMessageId
+            parentMessageId,
+            LocalDateTime.now()
         );
-        messages.add(message);
 
-        if (dbManager != null) {
-            triggerMentionNotifications(message, courseId, courseName, participants, dbManager);
+        if (store != null) {
+            triggerMentionNotifications(message, courseId, courseName, participants, store);
             if (notifyOnReply && parentMessageId != null) {
-                triggerReplyNotification(message, courseId, parentMessageId, courseName, dbManager);
+                triggerReplyNotification(message, courseId, parentMessageId, courseName, store);
             }
         }
 
@@ -316,32 +328,30 @@ public class CourseCommunicationService {
     }
 
     public List<ForumMessage> getMessagesForThread(int threadId) {
-        List<ForumMessage> result = new ArrayList<>();
-        for (ForumMessage message : messages) {
-            if (message.getThreadID() == threadId) {
-                result.add(message);
-            }
+        try {
+            return DatabaseManager.getInstance().getForumMessagesByThread(threadId);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return new ArrayList<>();
         }
-        result.sort(Comparator.comparing(ForumMessage::getTimestamp));
-        return result;
     }
 
     public ForumMessage getMessageById(int messageId) {
-        for (ForumMessage message : messages) {
-            if (message.getMessageID() == messageId) {
-                return message;
-            }
+        try {
+            return DatabaseManager.getInstance().getForumMessageById(messageId);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
         }
-        return null;
     }
 
     public ForumThread getThreadById(int threadId) {
-        for (ForumThread thread : threads) {
-            if (thread.getThreadID() == threadId) {
-                return thread;
-            }
+        try {
+            return DatabaseManager.getInstance().getForumThreadById(threadId);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
         }
-        return null;
     }
 
     public List<MessageNotification> getMessageNotificationsForUser(int courseId,

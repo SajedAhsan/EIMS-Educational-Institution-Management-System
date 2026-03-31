@@ -16,10 +16,10 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Student.studentDashboardController">
+<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Student.studentDashboardController">
    <children>
       <!-- Gradient Background -->
-      <Rectangle arcHeight="0.0" arcWidth="0.0" height="700.0" width="900.0">
+      <Rectangle arcHeight="0.0" arcWidth="0.0" height="800.0" width="1200.0">
          <fill>
             <LinearGradient endX="1.0" endY="1.0" startX="0.0" startY="0.0">
                <stops>
@@ -39,10 +39,10 @@
       </Rectangle>
 
       <!-- Main Layout -->
-      <HBox prefHeight="700.0" prefWidth="900.0">
+      <HBox prefHeight="800.0" prefWidth="1200.0">
          <children>
             <!-- Sidebar -->
-            <VBox prefHeight="700.0" prefWidth="260.0" spacing="10.0" style="-fx-background-color: linear-gradient(to bottom, #667eea 0%, #764ba2 100%); -fx-padding: 25 15 25 15;">
+            <VBox prefHeight="800.0" prefWidth="260.0" spacing="10.0" style="-fx-background-color: linear-gradient(to bottom, #667eea 0%, #764ba2 100%); -fx-padding: 25 15 25 15;">
                <effect>
                   <DropShadow color="rgba(0, 0, 0, 0.15)" height="20.0" radius="9.5" width="20.0" />
                </effect>
@@ -133,10 +133,10 @@
             </VBox>
 
             <!-- Main Content Area -->
-            <Pane prefHeight="700.0" prefWidth="640.0" HBox.hgrow="ALWAYS">
+            <Pane prefHeight="800.0" prefWidth="940.0" HBox.hgrow="ALWAYS">
                <children>
                   <!-- Welcome Card -->
-                  <VBox alignment="CENTER" layoutX="70.0" layoutY="180.0" prefHeight="250.0" prefWidth="500.0" spacing="25.0" style="-fx-background-color: white; -fx-background-radius: 25; -fx-padding: 40;">
+                  <VBox alignment="CENTER" layoutX="220.0" layoutY="220.0" prefHeight="250.0" prefWidth="500.0" spacing="25.0" style="-fx-background-color: white; -fx-background-radius: 25; -fx-padding: 40;">
                      <effect>
                         <DropShadow color="rgba(0, 0, 0, 0.15)" height="30.0" radius="14.5" width="30.0" />
                      </effect>
@@ -160,13 +160,13 @@
                   </VBox>
 
                   <!-- Notifications Panel (hidden by default) -->
-                  <VBox fx:id="notificationsPanel" layoutX="30.0" layoutY="30.0" prefWidth="580.0" spacing="10.0" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 20;" managed="false" visible="false">
+                  <VBox fx:id="notificationsPanel" layoutX="30.0" layoutY="30.0" prefWidth="880.0" spacing="10.0" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 20;" managed="false" visible="false">
                      <effect>
                         <DropShadow color="rgba(0,0,0,0.15)" height="20.0" radius="9.5" width="20.0" />
                      </effect>
                      <children>
                         <Label style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #667eea;" text="🔔  Notifications" />
-                        <ListView fx:id="notificationsList" prefHeight="380.0" prefWidth="540.0" style="-fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: #eee;" />
+                        <ListView fx:id="notificationsList" prefHeight="560.0" prefWidth="840.0" style="-fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: #eee;" />
                         <Label style="-fx-font-size: 11px; -fx-text-fill: #999;" text="🔵 = unread   Click Notifications button again to close" />
                      </children>
                   </VBox>

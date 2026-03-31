@@ -17,7 +17,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane prefHeight="700.0" prefWidth="900.0" minHeight="700.0" minWidth="900.0" maxHeight="700.0" maxWidth="900.0" style="-fx-background-color: #f4f7fb;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Student.StudentProgressTrackerController">
+<BorderPane prefHeight="800.0" prefWidth="1200.0" style="-fx-background-color: #f4f7fb;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Student.StudentProgressTrackerController">
 
    <!-- ── Top header ───────────────────────────────────────────────────── -->
    <top>
@@ -38,7 +38,7 @@
 
    <!-- ── Left sidebar: course list ────────────────────────────────────── -->
    <left>
-      <VBox prefWidth="250.0" spacing="10.0"
+      <VBox prefWidth="280.0" spacing="10.0"
             style="-fx-background-color: #ffffff; -fx-border-color: #d7deea; -fx-border-width: 0 1 0 0;">
          <padding><Insets bottom="14.0" left="12.0" right="12.0" top="14.0" /></padding>
          <children>
@@ -46,7 +46,7 @@
                <font><Font name="System Bold" size="15.0" /></font>
             </Label>
             <Label text="Click a course to view your progress" textFill="#64748b" wrapText="true" />
-            <ListView fx:id="courseListView" prefHeight="640.0" />
+            <ListView fx:id="courseListView" VBox.vgrow="ALWAYS" />
          </children>
       </VBox>
    </left>
@@ -63,7 +63,7 @@
                   <!-- Course title -->
                   <Label fx:id="selectedCourseLabel" text="Select a course from the left →"
                          textFill="#0f172a">
-                     <font><Font name="System Bold" size="14.0" /></font>
+                     <font><Font name="System Bold" size="16.0" /></font>
                   </Label>
 
                   <Separator />
@@ -91,16 +91,16 @@
                         <HBox alignment="CENTER_LEFT" spacing="10.0">
                            <children>
                               <PieChart fx:id="attendancePieChart" legendVisible="false"
-                                        prefHeight="160.0" prefWidth="160.0" />
+                                        prefHeight="210.0" prefWidth="210.0" />
                               <VBox spacing="8.0"
                                     style="-fx-background-color: #f8fafc; -fx-border-color: #d7deea; -fx-border-radius: 8; -fx-background-radius: 8;">
                                  <padding><Insets bottom="8.0" left="8.0" right="8.0" top="8.0" /></padding>
                                  <children>
                                     <Label text="Legend" textFill="#1f2937">
-                                       <font><Font name="System Bold" size="11.0" /></font>
+                                       <font><Font name="System Bold" size="12.0" /></font>
                                     </Label>
-                                    <Label text="🟢 Green = Present %" textFill="#166534" style="-fx-font-size: 10;" />
-                                    <Label text="🔴 Red = Absent %" textFill="#991b1b" style="-fx-font-size: 10;" />
+                                    <Label text="🟢 Green = Present %" textFill="#166534" style="-fx-font-size: 11;" />
+                                    <Label text="🔴 Red = Absent %" textFill="#991b1b" style="-fx-font-size: 11;" />
                                  </children>
                               </VBox>
                            </children>
@@ -123,11 +123,11 @@
 
                         <Label fx:id="assignmentsSummaryLabel" textFill="#475569" wrapText="true" />
 
-                        <TableView fx:id="assignmentsTable" prefHeight="160.0">
+                        <TableView fx:id="assignmentsTable" prefHeight="175.0">
                            <columns>
-                              <TableColumn fx:id="colAssignmentTitle"  prefWidth="200.0" text="Assignment Name" />
-                              <TableColumn fx:id="colAssignmentStatus" prefWidth="110.0" text="Status" />
-                              <TableColumn fx:id="colAssignmentScore"  prefWidth="70.0" text="Score" />
+                              <TableColumn fx:id="colAssignmentTitle" text="Assignment Name" />
+                              <TableColumn fx:id="colAssignmentStatus" text="Status" />
+                              <TableColumn fx:id="colAssignmentScore" text="Score" />
                            </columns>
                         </TableView>
 
@@ -171,11 +171,11 @@
 
                         <Label fx:id="examsSummaryLabel" textFill="#475569" wrapText="true" />
 
-                        <TableView fx:id="examsTable" prefHeight="135.0">
+                        <TableView fx:id="examsTable" prefHeight="145.0">
                            <columns>
-                              <TableColumn fx:id="colExamTitle"    prefWidth="170.0" text="Exam / Quiz" />
-                              <TableColumn fx:id="colExamScore"    prefWidth="80.0"  text="Score" />
-                              <TableColumn fx:id="colExamMaxScore" prefWidth="80.0"  text="Max Score" />
+                              <TableColumn fx:id="colExamTitle" text="Exam / Quiz" />
+                              <TableColumn fx:id="colExamScore" text="Score" />
+                              <TableColumn fx:id="colExamMaxScore" text="Max Score" />
                            </columns>
                         </TableView>
 

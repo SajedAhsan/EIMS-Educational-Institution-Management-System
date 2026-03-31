@@ -89,10 +89,10 @@ public class teacherLoginController {
                 Parent root = loader.load();
                 
                 Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-                stage.setScene(new Scene(root, 900, 700));
+                stage.setScene(new Scene(root, 1200, 800));
                 stage.setTitle("EIMS - Admin Dashboard");
-                stage.setWidth(900);
-                stage.setHeight(700);
+                stage.setWidth(1200);
+                stage.setHeight(800);
                 stage.setResizable(false);
                 stage.show();
             } catch (IOException e) {
@@ -114,10 +114,10 @@ public class teacherLoginController {
             Parent root = loader.load();
             
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.setScene(new Scene(root, 900, 700));
+            stage.setScene(new Scene(root, 1200, 800));
             stage.setTitle("EIMS - Admin Panel");
-            stage.setWidth(900);
-            stage.setHeight(700);
+            stage.setWidth(1200);
+            stage.setHeight(800);
             stage.setResizable(false);
             stage.show();
         } catch (IOException e) {

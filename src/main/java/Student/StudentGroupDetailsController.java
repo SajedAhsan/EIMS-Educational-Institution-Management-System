@@ -324,6 +324,7 @@ public class StudentGroupDetailsController {
         colMemberName.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getName()));
         colMemberEmail.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getEmail()));
 
+        studentsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         studentsTable.setItems(studentsObs);
         studentsTable.setPlaceholder(new Label("No students enrolled yet."));
 
@@ -490,6 +491,7 @@ public class StudentGroupDetailsController {
             return new SimpleStringProperty(g != null ? g + "/100" : "-");
         });
 
+        submissionsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         submissionsTable.setItems(ownSubmissionsObs);
         submissionsTable.setPlaceholder(new Label("You have not submitted any assignment yet."));
     }
@@ -1275,8 +1277,8 @@ public class StudentGroupDetailsController {
 
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
-            stage.setWidth(900.0);
-            stage.setHeight(700.0);
+            stage.setWidth(1200.0);
+            stage.setHeight(800.0);
             stage.setResizable(false);
             stage.show();
         } catch (IOException e) {

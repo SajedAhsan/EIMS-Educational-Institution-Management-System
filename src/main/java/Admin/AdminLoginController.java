@@ -56,13 +56,13 @@ public class AdminLoginController {
             try {
                 // Load AdminDashboard
                 FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/Admin/AdminDashboard.fxml"));
-                Scene scene = new Scene(fxmlLoader.load(), 900, 700);
+                Scene scene = new Scene(fxmlLoader.load(), 1200, 800);
                 
                 Stage stage = (Stage) loginButton.getScene().getWindow();
                 stage.setScene(scene);
                 stage.setTitle("EIMS - Admin Dashboard");
-                stage.setWidth(900);
-                stage.setHeight(700);
+                stage.setWidth(1200);
+                stage.setHeight(800);
                 stage.setResizable(false);
             } catch (IOException ex) {
                 ex.printStackTrace();
@@ -77,13 +77,13 @@ public class AdminLoginController {
     private void handleBackToHome() {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/startPage.fxml"));
-            Scene scene = new Scene(fxmlLoader.load(), 900, 700);
+            Scene scene = new Scene(fxmlLoader.load(), 1200, 800);
             
             Stage stage = (Stage) backButton.getScene().getWindow();
             stage.setScene(scene);
             stage.setTitle("EIMS - Start Page");
-            stage.setWidth(900);
-            stage.setHeight(700);
+            stage.setWidth(1200);
+            stage.setHeight(800);
             stage.setResizable(false);
         } catch (IOException ex) {
             ex.printStackTrace();
