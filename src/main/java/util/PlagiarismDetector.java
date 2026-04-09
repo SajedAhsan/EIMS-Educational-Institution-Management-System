@@ -1,7 +1,5 @@
 package util;
 
-import database.DatabaseManager;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -12,33 +10,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Utility class for detecting plagiarism between student submissions.
- *
- * Algorithm: Jaccard similarity on normalized word sets.
- *   similarity = |A ∩ B| / |A ∪ B|
- *
- * If similarity >= PLAGIARISM_THRESHOLD (70 %), both submissions are flagged
- * in the database and participants are notified via the existing notification system.
- */
+import database.DatabaseManager;
+
+
 public class PlagiarismDetector {
 
     /** Minimum Jaccard similarity to flag a pair of submissions as plagiarised. */
     private static final double PLAGIARISM_THRESHOLD = 0.70;
 
-    // --------------------------------------------------------------------- //
-    //  Text processing helpers                                                //
-    // --------------------------------------------------------------------- //
-
-    /**
-     * Normalize text for comparison:
-     * <ol>
-     *   <li>Lower-case</li>
-     *   <li>Replace every non-alphanumeric character with a space</li>
-     *   <li>Collapse consecutive whitespace to a single space</li>
-     *   <li>Trim leading/trailing whitespace</li>
-     * </ol>
-     */
     public static String normalize(String text) {
         if (text == null) return "";
         return text.toLowerCase()
@@ -68,11 +47,6 @@ public class PlagiarismDetector {
         return union.isEmpty() ? 0.0 : (double) intersection.size() / union.size();
     }
 
-    /**
-     * Read a file from {@code filePath} and return its normalised content.
-     * Tries UTF-8 first, then ISO-8859-1 as a fallback for non-UTF-8 sources.
-     * Returns an empty string if the file cannot be read (missing, binary, etc.).
-     */
     public static String readAndNormalize(String filePath) {
         try {
             String content = Files.readString(Paths.get(filePath), StandardCharsets.UTF_8);
@@ -88,24 +62,7 @@ public class PlagiarismDetector {
         }
     }
 
-    // --------------------------------------------------------------------- //
-    //  Main entry point                                                       //
-    // --------------------------------------------------------------------- //
-
     /**
-     * Run the plagiarism check for a newly submitted file.
-     *
-     * <p>Steps:
-     * <ol>
-     *   <li>Normalize the new file's content.</li>
-     *   <li>Compare it against every other submission for the same assignment.</li>
-     *   <li>Find the highest-similarity peer above the threshold.</li>
-     *   <li>If found: mark both submissions in the DB, notify both students and the teacher.</li>
-     *   <li>If not found: mark the new submission clean (plagiarized = false).</li>
-     * </ol>
-     *
-     * <p>This method is intentionally non-throwing for routine I/O issues — callers
-     * should catch {@link SQLException} for database failures only.
      *
      * @param dbManager    active {@link DatabaseManager} instance
      * @param assetId      ID of the assignment

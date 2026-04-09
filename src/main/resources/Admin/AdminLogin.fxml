@@ -12,7 +12,7 @@
 <?import javafx.scene.paint.Stop?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane minHeight="800" maxHeight="800" minWidth="1200" maxWidth="1200" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
+<AnchorPane minHeight="800" maxHeight="800" minWidth="1200" maxWidth="1200" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="Admin.AdminLoginController">
     <LinearGradient startX="0" startY="0" endX="1" endY="1">
         <Stop offset="0" color="#667eea"/>
         <Stop offset="1" color="#764ba2"/>

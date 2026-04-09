@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane prefHeight="800.0" prefWidth="1200.0" style="-fx-background-color: #f4f7fb;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Teacher.TeacherProfileController">
+    <top>
+        <HBox alignment="CENTER_LEFT" prefHeight="74.0" spacing="12.0" style="-fx-background-color: #ffffff; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0;">
+            <padding>
+                <Insets left="20.0" right="20.0" top="10.0" bottom="10.0"/>
+            </padding>
+            <children>
+                <Button onAction="#handleBack" prefHeight="36.0" prefWidth="90.0" style="-fx-background-color: #64748b; -fx-text-fill: white; -fx-font-weight: bold;" text="Back"/>
+                <Label text="Teacher Profile" textFill="#0f172a">
+                    <font>
+                        <Font name="System Bold" size="24.0"/>
+                    </font>
+                </Label>
+            </children>
+        </HBox>
+    </top>
+
+    <center>
+        <HBox alignment="TOP_CENTER" spacing="24.0" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets top="24.0" right="24.0" bottom="24.0" left="24.0"/>
+            </padding>
+            <children>
+                <VBox alignment="TOP_CENTER" prefWidth="320.0" spacing="14.0" style="-fx-background-color: white; -fx-background-radius: 12; -fx-padding: 24; -fx-border-color: #e2e8f0; -fx-border-radius: 12;">
+                    <children>
+                        <StackPane prefHeight="190.0" prefWidth="190.0" onMouseClicked="#handlePhotoClick" style="-fx-cursor: hand;">
+                            <children>
+                                <Rectangle width="180.0" height="180.0" arcWidth="12.0" arcHeight="12.0" fill="#f1f5f9" stroke="#cbd5e1"/>
+                                <ImageView fx:id="photoView" fitWidth="180.0" fitHeight="180.0" pickOnBounds="true" preserveRatio="true" smooth="true"/>
+                                <Label fx:id="photoLabel" text="Click to add photo" textFill="#64748b"/>
+                            </children>
+                        </StackPane>
+
+                        <Button onAction="#handleEdit" prefHeight="38.0" prefWidth="250.0" style="-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-weight: bold;" text="Edit Profile"/>
+                        <Button onAction="#handleChangePassword" prefHeight="38.0" prefWidth="250.0" style="-fx-background-color: #f59e0b; -fx-text-fill: white; -fx-font-weight: bold;" text="Change Password"/>
+                    </children>
+                </VBox>
+
+                <VBox prefWidth="760.0" spacing="14.0" style="-fx-background-color: white; -fx-background-radius: 12; -fx-padding: 24; -fx-border-color: #e2e8f0; -fx-border-radius: 12;">
+                    <children>
+                        <Label text="Profile Details" textFill="#0f172a">
+                            <font>
+                                <Font name="System Bold" size="22.0"/>
+                            </font>
+                        </Label>
+
+                        <HBox spacing="10.0">
+                            <children>
+                                <Label prefWidth="220.0" text="Full Name:" textFill="#475569"/>
+                                <Label fx:id="labelName" text="-" textFill="#0f172a"/>
+                            </children>
+                        </HBox>
+
+                        <HBox spacing="10.0">
+                            <children>
+                                <Label prefWidth="220.0" text="Email Address:" textFill="#475569"/>
+                                <Label fx:id="labelEmail" text="-" textFill="#0f172a"/>
+                            </children>
+                        </HBox>
+
+                        <HBox spacing="10.0">
+                            <children>
+                                <Label prefWidth="220.0" text="Role / Position:" textFill="#475569"/>
+                                <Label fx:id="labelRole" text="-" textFill="#0f172a"/>
+                            </children>
+                        </HBox>
+
+                        <HBox spacing="10.0">
+                            <children>
+                                <Label prefWidth="220.0" text="Department / Faculty:" textFill="#475569"/>
+                                <Label fx:id="labelDepartment" text="-" textFill="#0f172a"/>
+                            </children>
+                        </HBox>
+
+                        <HBox spacing="10.0">
+                            <children>
+                                <Label prefWidth="220.0" text="Subjects / Courses Taught:" textFill="#475569"/>
+                                <Label fx:id="labelSubjects" text="-" textFill="#0f172a" wrapText="true"/>
+                            </children>
+                        </HBox>
+
+                        <HBox spacing="10.0">
+                            <children>
+                                <Label prefWidth="220.0" text="Contact Information:" textFill="#475569"/>
+                                <Label fx:id="labelContact" text="-" textFill="#0f172a"/>
+                            </children>
+                        </HBox>
+
+                        <HBox spacing="10.0">
+                            <children>
+                                <Label prefWidth="220.0" text="Years of Experience:" textFill="#475569"/>
+                                <Label fx:id="labelYearsExperience" text="-" textFill="#0f172a"/>
+                            </children>
+                        </HBox>
+
+                        <HBox spacing="10.0">
+                            <children>
+                                <Label prefWidth="220.0" text="Highest Degree / Qualification:" textFill="#475569"/>
+                                <Label fx:id="labelQualification" text="-" textFill="#0f172a"/>
+                            </children>
+                        </HBox>
+                    </children>
+                </VBox>
+            </children>
+        </HBox>
+    </center>
+</BorderPane>

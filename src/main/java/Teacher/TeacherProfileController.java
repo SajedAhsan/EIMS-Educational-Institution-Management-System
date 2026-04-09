@@ -1,5 +1,9 @@
 package Teacher;
 
+import java.io.File;
+import java.io.IOException;
+import java.sql.SQLException;
+
 import database.DatabaseManager;
 import database.DatabaseManager.TeacherProfileData;
 import javafx.event.ActionEvent;
@@ -7,6 +11,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -25,15 +30,14 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-import java.io.File;
-import java.io.IOException;
-import java.sql.SQLException;
-
 public class TeacherProfileController {
+
+    private static final double PROFILE_PHOTO_SIZE = 180.0;
 
     // ── Profile labels ─────────────────────────────────────────────────────
     @FXML private Label labelName;
@@ -58,6 +62,15 @@ public class TeacherProfileController {
     public void setTeacherEmail(String email) {
         this.teacherEmail = email;
         loadProfile();
+    }
+
+    @FXML
+    private void initialize() {
+        photoView.setFitWidth(PROFILE_PHOTO_SIZE);
+        photoView.setFitHeight(PROFILE_PHOTO_SIZE);
+        photoView.setPreserveRatio(false);
+        photoView.setSmooth(true);
+        photoView.setClip(new Rectangle(PROFILE_PHOTO_SIZE, PROFILE_PHOTO_SIZE));
     }
 
     // ── Load / display ─────────────────────────────────────────────────────
@@ -95,12 +108,13 @@ public class TeacherProfileController {
         if (path != null && !path.isBlank()) {
             File f = new File(path);
             if (f.exists()) {
-                photoView.setImage(new Image(f.toURI().toString()));
+                setSquareImage(new Image(f.toURI().toString()));
                 photoLabel.setVisible(false);
                 return;
             }
         }
         photoView.setImage(null);
+        photoView.setViewport(null);
         photoLabel.setVisible(true);
     }
 
@@ -121,7 +135,7 @@ public class TeacherProfileController {
         if (file == null) return;
 
         Image img = new Image(file.toURI().toString());
-        photoView.setImage(img);
+        setSquareImage(img);
         photoLabel.setVisible(false);
 
         // Persist path immediately
@@ -333,6 +347,26 @@ public class TeacherProfileController {
         TextField tf = new TextField(value != null ? value : "");
         tf.setPrefWidth(300);
         return tf;
+    }
+
+    private void setSquareImage(Image image) {
+        photoView.setImage(image);
+        if (image == null) {
+            photoView.setViewport(null);
+            return;
+        }
+
+        double width = image.getWidth();
+        double height = image.getHeight();
+        if (width <= 0 || height <= 0) {
+            photoView.setViewport(null);
+            return;
+        }
+
+        double side = Math.min(width, height);
+        double x = (width - side) / 2.0;
+        double y = (height - side) / 2.0;
+        photoView.setViewport(new Rectangle2D(x, y, side, side));
     }
 
     private void showAlert(AlertType type, String title, String message) {
